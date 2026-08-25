@@ -65,6 +65,29 @@
   @media (prefers-reduced-motion: reduce) {
     h1 .cursor { animation: none; }
   }
+  .atlas-links {
+    margin-top: 42px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+    pointer-events: auto;
+  }
+  .atlas-links a {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: clamp(9px, 1.4vw, 12px);
+    color: #ffd07a;
+    text-decoration: none;
+    padding: 12px 16px;
+    border: 3px solid #ffd07a;
+    background: rgba(20, 8, 40, 0.55);
+    text-shadow: 2px 2px 0 rgba(20, 8, 40, 0.85);
+  }
+  .atlas-links a:hover {
+    color: #140828;
+    background: #ffd07a;
+    text-shadow: none;
+  }
 </style>
 </head>
 <body>
@@ -72,6 +95,10 @@
 <div class="scanlines"></div>
 <div class="overlay">
   <h1>COMING SOON<span class="cursor">_</span></h1>
+  <nav class="atlas-links" aria-label="Projects">
+    <a href="/carbon-atlas/">&#9654; CARBON ATLAS</a>
+    <a href="/nature-atlas/">&#9654; NATURE ATLAS</a>
+  </nav>
 </div>
 <script>
 (function () {
@@ -155,6 +182,7 @@
 
   function rebuild() {
     var aspect = window.innerWidth / window.innerHeight;
+    if (!isFinite(aspect) || aspect <= 0) aspect = 16 / 9;
     W = Math.max(96, Math.min(320, Math.round(LOGICAL_H * aspect)));
     canvas.width = W;
     canvas.height = H;
@@ -260,9 +288,8 @@
   });
 
   rebuild();
-  if (reducedMotion) {
-    draw(0.3, 0);    // single static frame mid-sunset
-  } else {
+  draw(0.3, 0);      // paint immediately so there is no black flash
+  if (!reducedMotion) {
     requestAnimationFrame(frame);
   }
 })();

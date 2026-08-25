@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carbon Atlas — Kamber Lucas</title>
+<meta name="description" content="An interactive guide to where the world's greenhouse gas emissions come from — every sector and source, three decades of trends, explained in plain language.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --page: #140e2b;
+    --surface-1: #1e1640;
+    --surface-2: #2a1f55;
+    --ink-1: #f2edff;
+    --ink-2: #b9aed6;
+    --ink-3: #7d729e;
+    --grid: #2e2455;
+    --axis: #453a6e;
+    --ring: rgba(255,255,255,.08);
+    --critical: #ff6b7a;
+    --good: #4ecb52; --goodfill: #4ecb52;
+    /* sunset accents (decorative) */
+    --gold: #ffd07a; --sunset: #ff8a4a; --magenta: #e85d9c;
+    /* categorical slots (validated on #211943, dark) */
+    --s1: #3d8ee6; --s2: #e06a2a; --s3: #189f7d; --s4: #b38a10;
+    --s5: #e05a9f; --s6: #62ab27; --s7: #8f7af0; --s8: #e04a58;
+    /* sunburst sector hues */
+    --sec-energy: #3d8ee6; --sec-afolu: #62ab27; --sec-ip: #e06a2a; --sec-waste: #8f7af0;
+    /* fuel ordinal ramp (blue, one hue, validated) */
+    --f1: #a8c8f8; --f2: #6a9df0; --f3: #3a72cc; --f4: #234f97;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink-1);
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+  .px { font-family: "Press Start 2P", "IBM Plex Mono", monospace; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 64px; }
+
+  /* subtle CRT scanlines */
+  .scan {
+    position: fixed; inset: 0; pointer-events: none; z-index: 60;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 3px,
+      rgba(0,0,0,.05) 3px, rgba(0,0,0,.05) 4px);
+  }
+
+  /* top nav */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    max-width: 1180px; margin: 0 auto; padding: 18px 24px;
+  }
+  .topnav .brand {
+    font-family: "Press Start 2P", monospace; font-size: 12px; text-decoration: none;
+    color: var(--gold); text-shadow: 0 0 12px rgba(255,208,122,.45);
+  }
+  .topnav .links { display: flex; gap: 18px; flex-wrap: wrap; }
+  .topnav .links a {
+    font-family: "Press Start 2P", monospace; font-size: 9px; text-decoration: none;
+    color: var(--ink-2); padding: 6px 2px; letter-spacing: .04em;
+  }
+  .topnav .links a:hover { color: var(--gold); }
+  .topnav .links a.on { color: var(--magenta); border-bottom: 3px solid var(--magenta); }
+
+  /* pixel banner */
+  #banner { display: block; width: 100%; height: 150px; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+  header.site { padding: 34px 0 8px; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(20px, 3.4vw, 34px); font-weight: 400; line-height: 1.35;
+    margin: 14px 0 10px;
+    background: linear-gradient(100deg, var(--gold), var(--sunset) 45%, var(--magenta));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .byline { font-size: 13px; color: var(--ink-3); margin: 0 0 14px; }
+  .byline b { color: var(--ink-2); font-weight: 600; }
+  .lede { max-width: 68ch; color: var(--ink-2); font-size: 15px; margin: 0 0 24px; }
+
+  /* intro / explainer panels */
+  .intro { border-left: 4px solid var(--gold); margin-bottom: 26px; }
+  .intro h2 { margin-top: 0; }
+  .intro p { font-size: 14px; color: var(--ink-2); max-width: 88ch; margin: 0 0 10px; }
+  .intro p b, .intro p strong { color: var(--ink-1); }
+  .howto {
+    background: var(--surface-2); border: 1px solid var(--ring);
+    padding: 12px 16px; margin: 0 0 16px; font-size: 13px; color: var(--ink-2); max-width: 100%;
+  }
+  .howto .tag {
+    font-family: "Press Start 2P", monospace; font-size: 8px; color: var(--gold);
+    display: inline-block; margin-right: 8px; letter-spacing: .06em;
+  }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 40px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--ring); border-top: 3px solid var(--s1); padding: 16px 18px; }
+  .tile .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .tile .v {
+    font-family: "Press Start 2P", monospace; font-size: 17px; font-weight: 400;
+    margin: 12px 0 8px; color: var(--gold); text-shadow: 0 0 10px rgba(255,208,122,.35);
+  }
+  .tile .v small { font-size: 10px; color: var(--ink-2); font-family: "IBM Plex Mono", monospace; }
+  .tile .d { font-size: 12px; color: var(--ink-2); }
+  .tile .d .up { color: var(--critical); font-weight: 600; }
+  .tile.warn { border-top-color: var(--critical); }
+  .tile.warn .v { color: var(--critical); text-shadow: 0 0 10px rgba(255,107,122,.35); }
+
+  h2 {
+    font-family: "Press Start 2P", monospace; font-size: 14px; font-weight: 400;
+    line-height: 1.5; letter-spacing: .01em; margin: 0 0 10px; color: var(--ink-1);
+  }
+  .subhead { font-size: 13.5px; color: var(--ink-2); margin: 0 0 14px; max-width: 82ch; }
+  section { margin-bottom: 56px; }
+
+  .panel { background: var(--surface-1); border: 1px solid var(--ring); padding: 20px; box-shadow: 0 0 28px rgba(232,93,156,.05); }
+  .split { display: grid; grid-template-columns: minmax(320px, 460px) 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+
+  /* sunburst */
+  #sunwrap { position: relative; }
+  #sunburst { width: 100%; height: auto; display: block; }
+  #sunburst path { cursor: pointer; transition: opacity .15s; }
+  @media (prefers-reduced-motion: reduce) { #sunburst path { transition: none; } }
+  #sunburst path:focus-visible { outline: 2px solid var(--ink-1); outline-offset: 1px; }
+  .sun-center { cursor: pointer; }
+  .sun-hint { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 8px; }
+
+  /* hierarchy list */
+  .tree { font-size: 13.5px; }
+  .trow { display: grid; grid-template-columns: 18px 1fr 120px 64px 58px; gap: 8px; align-items: center; padding: 5px 6px; }
+  .trow:hover { background: var(--surface-2); }
+  .trow .togg { width: 18px; height: 18px; border: 0; background: none; color: var(--ink-3); cursor: pointer; padding: 0; font-size: 11px; line-height: 1; }
+  .trow .togg.leaf { visibility: hidden; }
+  .trow .nm { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .trow .nm span.lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { width: 10px; height: 10px; flex: none; }
+  .trow .bar { height: 8px; background: var(--surface-2); overflow: hidden; }
+  .trow .bar i { display: block; height: 100%; }
+  .trow .pct, .trow .gt { text-align: right; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .trow.d1 { font-weight: 600; }
+  .trow.d2 .nm { padding-left: 16px; }
+  .trow.d3 .nm { padding-left: 32px; font-size: 13px; color: var(--ink-2); }
+  .trow.hi { background: var(--surface-2); }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; font-size: 12.5px; color: var(--ink-2); }
+  .legend button { display: flex; align-items: center; gap: 6px; background: none; border: 0; padding: 2px 0; color: inherit; font: inherit; cursor: pointer; }
+  .legend button.dim { opacity: .35; }
+
+  /* trends chart */
+  #trend { width: 100%; height: auto; display: block; }
+  #trendwrap { position: relative; }
+  .tt {
+    position: absolute; pointer-events: none; z-index: 5; display: none;
+    background: var(--surface-2); border: 1px solid var(--axis);
+    box-shadow: 0 4px 16px rgba(0,0,0,.4); padding: 10px 12px; font-size: 12px; min-width: 210px;
+  }
+  .tt h4 { margin: 0 0 6px; font-size: 12px; }
+  .tt .r { display: flex; align-items: center; gap: 6px; justify-content: space-between; padding: 1px 0; color: var(--ink-2); }
+  .tt .r b { color: var(--ink-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tt .r .l { display: flex; align-items: center; gap: 6px; }
+
+  /* fuel bar */
+  .fuelbar { display: flex; height: 34px; overflow: hidden; gap: 2px; background: var(--page); }
+  .fuelbar div { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; min-width: 0; }
+  .fuelkey { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12.5px; color: var(--ink-2); }
+  .fuelkey .r { display: flex; gap: 6px; align-items: center; }
+
+  details.dtable { margin-top: 14px; font-size: 13px; }
+  details.dtable summary { cursor: pointer; color: var(--ink-2); }
+  .tscroll { overflow-x: auto; margin-top: 10px; }
+  table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 4px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--ink-3); font-weight: 600; }
+
+  /* glossary */
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 22px; font-size: 13px; }
+  .gloss dt { font-weight: 700; color: var(--gold); margin-top: 8px; }
+  .gloss dd { margin: 2px 0 0; color: var(--ink-2); }
+
+  /* companion card */
+  .companion { display: block; text-decoration: none; border-left: 4px solid var(--s6); margin-bottom: 26px; }
+  .companion .t { font-family: "Press Start 2P", monospace; font-size: 12px; color: var(--good); margin-bottom: 10px; }
+  .companion p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  .companion:hover .t { text-shadow: 0 0 10px rgba(78,203,82,.5); }
+
+  footer.src { border-top: 1px solid var(--grid); padding-top: 20px; font-size: 13px; color: var(--ink-2); }
+  footer.src h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); margin: 0 0 10px; }
+  footer.src p { max-width: 90ch; margin: 0 0 10px; }
+  footer.src a { color: inherit; text-decoration-color: var(--ink-3); text-underline-offset: 2px; }
+  footer.src a:hover { color: var(--ink-1); }
+
+  .ledger { margin: 0 0 14px; }
+  .lgrid { display: grid; grid-template-columns: 1fr 1.3fr 1.5fr; gap: 22px; align-items: start; }
+  @media (max-width: 860px) { .lgrid { grid-template-columns: 1fr; } }
+  .lcell .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .lcell .lv { font-family: "Press Start 2P", monospace; font-size: 18px; margin: 12px 0 8px; color: var(--gold); text-shadow: 0 0 10px rgba(255,208,122,.35); }
+  .lcell .lv small { font-size: 10px; color: var(--ink-2); font-family: "IBM Plex Mono", monospace; }
+  .lbar { height: 10px; background: var(--surface-2); overflow: hidden; margin-bottom: 6px; }
+  .lbar i { display: block; height: 100%; width: 37%; background: linear-gradient(90deg, var(--magenta), var(--sunset)); }
+  .ld { font-size: 12px; color: var(--ink-2); }
+  .lchip { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; margin: 2px 6px 4px 0; }
+  .lchip.up { background: rgba(78,203,82,.15); color: var(--good); }
+  .lchip.dn { background: rgba(255,107,122,.15); color: var(--critical); }
+  .ledger details { margin-top: 12px; font-size: 12.5px; color: var(--ink-2); }
+  .ledger summary { cursor: pointer; font-weight: 600; }
+  .ledger .mtable { overflow-x: auto; margin-top: 10px; }
+  .ledger table { border-collapse: collapse; font-size: 12px; min-width: 660px; }
+  .ledger th, .ledger td { text-align: left; padding: 4px 14px 4px 0; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  .ledger th { color: var(--ink-3); font-weight: 600; }
+  .ledger td.num { font-variant-numeric: tabular-nums; }
+  .ledger .w { color: var(--critical); font-weight: 600; }
+  .ledger .g { color: var(--good); font-weight: 600; }
+  .ledger .f { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<nav class="topnav">
+  <a class="brand" href="/">KAMBER LUCAS</a>
+  <div class="links">
+    <a href="/">HOME</a>
+    <a href="/carbon-atlas/" class="on">CARBON ATLAS</a>
+    <a href="/nature-atlas/">NATURE ATLAS</a>
+  </div>
+</nav>
+
+<canvas id="banner" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header class="site">
+    <div class="eyebrow">Global greenhouse gas emissions · compiled from Climate Watch / WRI · Global Carbon Project · Our World in Data</div>
+    <h1>CARBON ATLAS</h1>
+    <p class="byline">Compiled by <b>Kamber Lucas</b> · Data current as of August 2026 · Companion page: <a href="/nature-atlas/" style="color:var(--ink-2)">Nature Atlas</a></p>
+    <p class="lede">Where the world's planet-warming emissions come from, parsed down to the individual source — road transport, iron &amp; steel, rice cultivation, landfills — with three decades of trend behind each sector.</p>
+
+    <div class="panel intro">
+      <h2>START HERE</h2>
+      <p><strong>What is this page?</strong> It is a map of humanity's greenhouse gas emissions — the gases we release that trap heat in the atmosphere and warm the planet. The biggest one is carbon dioxide (CO₂), released when coal, oil and gas are burned; methane (from livestock, rice paddies, landfills and gas leaks) and nitrous oxide (mostly from fertilised soils) matter too. To compare them fairly, everything here is expressed in <b>CO₂-equivalents (CO₂e)</b> — each gas counted by how much warming it causes relative to CO₂.</p>
+      <p><strong>The units:</strong> emissions are measured in <b>gigatonnes (Gt)</b> — one gigatonne is a billion tonnes. The world currently emits about 52 GtCO₂e per year. For scale: that is roughly 6.4 tonnes for every person on Earth, every year.</p>
+      <p><strong>How to use it:</strong> the scoreboard below gives the planet's vital signs at a glance. Then three views break the problem down: an interactive wheel showing <em>where</em> every slice of emissions comes from, a 33-year history showing <em>how</em> each sector has grown, and a breakdown of which <em>fuels</em> are responsible. Hover and click everything — and every number links back to its public source at the bottom of the page.</p>
+    </div>
+
+    <div class="panel ledger">
+      <p class="ld" style="margin:0 0 14px;max-width:95ch"><b style="color:var(--ink-1)">The planetary scoreboard.</b> Before diving into emissions, here is the summary reading across both atlases: how healthy the planet's carbon balance and living systems are right now (<b>state</b>), which way things are moving (<b>trend</b>), and whether the pace of damage is speeding up or slowing down (<b>acceleration</b>).</p>
+      <div class="lgrid">
+        <div class="lcell">
+          <div class="k">Planetary state · carbon + nature</div>
+          <div class="lv">37<small> /100</small></div>
+          <div class="lbar"><i></i></div>
+          <div class="ld">Equal-weight roll-up of 11 stock indicators across both atlases (100 = healthy reference). Nature 56 · Carbon 18 · leave-one-out range 33–40.</div>
+        </div>
+        <div class="lcell">
+          <div class="k">Net trend · direction of travel</div>
+          <div class="lv" style="color:var(--critical);text-shadow:0 0 10px rgba(255,107,122,.35)">▼ −1.0</div>
+          <div class="ld">Worsening — mean of ordinal classes from −2 (rapidly worsening) to +2 (improving). Nature −0.6, Carbon −1.3. Of 11 trend inputs: 9 deteriorating · 1 flat · 1 improving.</div>
+        </div>
+        <div class="lcell">
+          <div class="k">Acceleration · is it speeding up?</div>
+          <div class="ld" style="margin:6px 0 4px"><span class="lchip up">Direct human pressure — decelerating</span><span class="lchip dn">Climate-driven pressure — accelerating</span></div>
+          <div class="ld">Deforestation, overfishing growth and emissions growth are all slowing; fire, bleaching and heat damage are speeding up. Net: the world is <b>losing ground more slowly</b> — no global stock is yet recovering.</div>
+        </div>
+      </div>
+      <details>
+        <summary>Method &amp; components</summary>
+        <div class="ld" style="margin-top:8px;max-width:100ch"><b>State</b> scores stocks only, each 0–100 against the stated reference below, equal-weighted within each domain, then domains averaged — no defensible unequal weighting exists, so weights are transparent instead. <b>Trend</b> classifies each input's current direction on an ordinal scale (−2 rapidly worsening · −1 worsening · 0 flat · +1 stabilizing · +2 improving), which avoids unit-choice artifacts; flows (emission and loss rates) inform trend, not state. <b>Acceleration</b> is reported qualitatively by pressure type. The level is sensitive to reference choices (especially 450 ppm and the ~500 Gt budget); the trend column is robust to them. Vintages span 2018–2026. This is a summary lens over the sourced indicators of both atlases — not a measurement.</div>
+        <div class="mtable"><table>
+          <tr><th>Indicator</th><th>State</th><th>Reference (=100)</th><th>Trend</th><th>2nd derivative</th></tr>
+          <tr><td>Wildlife populations (LPI)</td><td class="num">27</td><td>1970 abundance</td><td class="w">▼ worsening</td><td>no bend visible</td></tr>
+          <tr><td>Forest extent</td><td class="num">89</td><td>1990 area</td><td class="w">▼ worsening</td><td class="g">decelerating</td></tr>
+          <tr><td>Wetland extent</td><td class="num">78</td><td>1970 area</td><td class="w">▼ worsening</td><td>steady (−0.5%/yr)</td></tr>
+          <tr><td>Coral cover</td><td class="num">50</td><td>1950s cover</td><td class="w">▼ worsening</td><td class="w">accelerating</td></tr>
+          <tr><td>Land unaltered by humans</td><td class="num">25</td><td>Pre-industrial</td><td class="w">▼ worsening</td><td>slowing in forests, not grasslands</td></tr>
+          <tr><td>Species not threatened</td><td class="num">72</td><td>All assessed species</td><td class="w">▼ worsening</td><td>steady</td></tr>
+          <tr><td>Fish stocks sustainable</td><td class="num">62</td><td>All assessed stocks</td><td class="f">■ flat</td><td class="g">plateaued</td></tr>
+          <tr><td>Protected area (30×30)</td><td class="num">46</td><td>30% land &amp; ocean target</td><td class="g">▲ improving</td><td class="g">accelerating (ocean)</td></tr>
+          <tr><td>Atmospheric CO₂ headroom</td><td class="num">14</td><td>278 ppm; 0 at 450 ppm</td><td class="w">▼ worsening</td><td>steady rise (+2.5 ppm/yr)</td></tr>
+          <tr><td>1.5 °C carbon budget left</td><td class="num">34</td><td>~500 Gt (from 2020)</td><td class="w">▼▼ rapidly worsening</td><td>~4 years at current rate</td></tr>
+          <tr><td>Warming headroom</td><td class="num">7</td><td>1.5 °C limit (now ~1.4 °C)</td><td class="w">▼ worsening</td><td>steady</td></tr>
+          <tr><td>Fossil emissions (flow → trend only)</td><td class="num">—</td><td>—</td><td class="w">▼ rising +1.1%/yr</td><td class="g">growth decelerating (was ~3%/yr in 2000s)</td></tr>
+        </table></div>
+        <div class="ld" style="margin-top:8px">Nature-side components live on the companion <a href="/nature-atlas/" style="color:inherit">Nature Atlas</a>.</div>
+      </details>
+    </div>
+    <div class="tiles">
+      <div class="tile">
+        <div class="k">Total GHG · 2023</div>
+        <div class="v">52.0 <small>GtCO₂e</small></div>
+        <div class="d">Everything humanity emitted in a year — all gases, including land use · Climate Watch</div>
+      </div>
+      <div class="tile">
+        <div class="k">Fossil CO₂ · 2025</div>
+        <div class="v">38.1 <small>GtCO₂</small></div>
+        <div class="d"><span class="up">▲ 1.1%</span> vs 2024 — an all-time record · Global Carbon Project</div>
+      </div>
+      <div class="tile">
+        <div class="k">CO₂ in the air · 2025</div>
+        <div class="v">425.7 <small>ppm</small></div>
+        <div class="d">Parts per million — 52% above the pre-industrial level of 278</div>
+      </div>
+      <div class="tile warn">
+        <div class="k">Remaining 1.5 °C budget</div>
+        <div class="v">~170 <small>GtCO₂</small></div>
+        <div class="d">CO₂ the world can still emit with a coin-flip chance of staying under 1.5 °C — about 4 years at today's pace</div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>WHERE EMISSIONS COME FROM</h2>
+    <p class="subhead">Almost three-quarters of global emissions come from <b>energy</b> — making electricity and heat, moving people and goods, running factories and heating buildings. The rest comes from farming and land clearing, from industrial chemistry (making cement releases CO₂ from the rock itself, not just the fuel), and from our waste. This is the most detailed consistent global decomposition available — Climate Watch &amp; WRI (2016 reference year, ~49.4 GtCO₂e), the same breakdown used by Our World in Data.</p>
+    <div class="howto"><span class="tag">HOW TO READ</span>The wheel works like nested pie charts: the <b>inner ring</b> splits all emissions into four big sectors, and each <b>outer ring</b> splits its parent into finer pieces — so "Road transport" sits inside "Transport", which sits inside "Energy". <b>Click any wedge to zoom in</b> on that sector; <b>click the centre</b> to zoom back out. Hover for exact numbers. The list on the right shows the same data as an expandable table — percentages are shares of all global greenhouse gas emissions.</div>
+    <div class="panel split">
+      <div id="sunwrap">
+        <svg id="sunburst" viewBox="0 0 440 440" role="img" aria-label="Zoomable sunburst of global greenhouse gas emissions by sector and subsector"></svg>
+        <div class="sun-hint" id="sunhint">Showing all sectors — click a wedge to zoom</div>
+        <div class="tt" id="suntt"></div>
+      </div>
+      <div>
+        <div class="tree" id="tree"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>THREE DECADES OF TRENDS</h2>
+    <p class="subhead">Global emissions by sector, 1990–2023, in GtCO₂e. Total emissions have grown by more than 50% since 1990 — but not evenly: electricity and transport have surged while some sectors have plateaued. One quirk to know: <b>land-use change</b> (deforestation minus forest regrowth) flips between adding carbon and absorbing it, so its band sits at the base of the stack and can dip below zero in good years.</p>
+    <div class="howto"><span class="tag">HOW TO READ</span>Each coloured band is one sector. The <b>thickness</b> of a band in any year is that sector's emissions; the <b>top of the whole stack</b> is the world total. <b>Hover</b> anywhere for exact values in that year; <b>click a legend entry</b> to isolate a single sector (click again to restore). A full data table is below the chart.</div>
+    <div class="panel">
+      <div class="legend" id="trlegend"></div>
+      <div id="trendwrap">
+        <svg id="trend" viewBox="0 0 1080 420" role="img" aria-label="Stacked area chart of global greenhouse gas emissions by sector, 1990 to 2023"></svg>
+        <div class="tt" id="trtt"></div>
+      </div>
+      <details class="dtable">
+        <summary>View as data table</summary>
+        <div class="tscroll" id="trtable"></div>
+      </details>
+    </div>
+  </section>
+
+  <section>
+    <h2>WHICH FUELS ARE BURNING</h2>
+    <p class="subhead">Of the 38.1 GtCO₂ of fossil emissions projected for 2025, coal is still the single largest source, followed by oil and natural gas. "Cement" is CO₂ released by the chemical reaction that turns limestone into cement — separate from any fuel burned. None of the three fuels declined in 2025: coal grew +0.8%, oil +1.0%, gas +1.3% · Global Carbon Budget 2025.</p>
+    <div class="panel">
+      <div class="fuelbar" id="fuelbar" role="img" aria-label="Segmented bar of 2025 fossil CO2 emissions by fuel: coal 16.0, oil 12.6, gas 8.0, cement 1.4 gigatonnes"></div>
+      <div class="fuelkey" id="fuelkey"></div>
+    </div>
+  </section>
+
+  <a class="companion panel" href="/nature-atlas/">
+    <div class="t">▶ CONTINUE TO THE NATURE ATLAS</div>
+    <p>Emissions are half the story. The companion page tracks what is happening to the living world — species, forests, oceans and fresh water — what is driving the loss, and where protection is working.</p>
+  </a>
+
+  <section>
+    <h2>GLOSSARY</h2>
+    <p class="subhead">The jargon on this page, in plain words.</p>
+    <div class="panel">
+      <dl class="gloss">
+        <div><dt>Greenhouse gas (GHG)</dt><dd>Any gas that traps heat in the atmosphere. The big three: carbon dioxide (CO₂), methane (CH₄) and nitrous oxide (N₂O).</dd></div>
+        <div><dt>CO₂e (CO₂-equivalent)</dt><dd>A common currency for comparing gases. A tonne of methane warms the planet far more than a tonne of CO₂ over a century, so it is counted as multiple "tonnes of CO₂-equivalent" (using 100-year global-warming potentials).</dd></div>
+        <div><dt>Gigatonne (Gt)</dt><dd>One billion tonnes. Humanity emits ~52 GtCO₂e per year — about 100,000 tonnes every minute.</dd></div>
+        <div><dt>ppm (parts per million)</dt><dd>How CO₂ concentration in the air is measured. For every million air molecules, ~426 are now CO₂ — up from 278 before the industrial era.</dd></div>
+        <div><dt>Carbon budget</dt><dd>The total CO₂ the world can still emit while keeping a ~50% chance of limiting warming to a target (here 1.5 °C). It shrinks every year we keep emitting.</dd></div>
+        <div><dt>Fossil CO₂ vs total GHG</dt><dd>"Fossil CO₂" (38.1 Gt) counts only CO₂ from fossil fuels and cement. "Total GHG" (52 Gt) adds methane, nitrous oxide, F-gases and land-use change.</dd></div>
+        <div><dt>Fugitive emissions</dt><dd>Gas that escapes rather than being burned — leaks from wells, pipelines and coal mines. Nearly 6% of the global total.</dd></div>
+        <div><dt>Land-use change (LUCF)</dt><dd>Emissions from clearing forests and draining soils, minus the carbon absorbed where forests regrow. The most uncertain number in the ledger — and the only one that can go negative.</dd></div>
+        <div><dt>1.5 °C / 2 °C</dt><dd>The warming limits in the Paris Agreement, measured against pre-industrial temperature. The world is already at roughly +1.4 °C.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    <h2>ABOUT THIS PROJECT</h2>
+    <div class="panel">
+      <p style="max-width:88ch;font-size:14px;color:var(--ink-2);margin:0">I'm <b style="color:var(--ink-1)">Kamber Lucas</b> — an MBA student at Colorado State University focused on carbon management and sustainability, previously in conservation with the Alaska Dept. of Fish &amp; Game and a Returned Peace Corps Volunteer. I built the Carbon and Nature atlases to put the headline numbers about the planet in one place, at full detail, with every figure traceable to a public source. The charts are hand-coded; the data comes from the organisations listed below. Corrections and suggestions welcome.</p>
+    </div>
+  </section>
+
+  <footer class="src">
+    <h3>Sources &amp; method</h3>
+    <p>Sector and subsector shares: <a href="https://ourworldindata.org/ghg-emissions-by-sector">Our World in Data, "Sector by sector"</a>, based on <a href="https://www.climatewatchdata.org/ghg-emissions">Climate Watch</a> and the <a href="https://www.wri.org/insights/4-charts-explain-greenhouse-gas-emissions-countries-and-sectors">World Resources Institute</a> (reference year 2016, the latest year with this depth of subsector detail). Sector time series 1990–2023: Climate Watch historical emissions (CAIT), all gases and sectors including land use, via Our World in Data. 2025 fossil CO₂, fuel split, atmospheric concentration and carbon budget: <a href="https://globalcarbonbudget.org/fossil-fuel-co2-emissions-hit-record-high-in-2025/">Global Carbon Budget 2025</a> (Global Carbon Project), with fuel-level detail via <a href="https://www.carbonbrief.org/analysis-fossil-fuel-co2-emissions-to-set-new-record-in-2025-as-land-sink-recovers">Carbon Brief's analysis</a>.</p>
+    <p>Notes: GHG totals use 100-year global-warming potentials to express CH₄ and N₂O as CO₂-equivalents. The 2016 subsector shares and the 2023 sector totals come from the same Climate Watch lineage but different vintages — shares shift slowly (electricity, transport and industry have grown a little faster than the rest), so treat subsector percentages as a close guide, not a 2023 measurement. Net land-use change carries the largest uncertainty of any category.</p>
+    <p>© Kamber Lucas · <a href="/">kamberlu.github.io</a> · Companion: <a href="/nature-atlas/">Nature Atlas</a></p>
+  </footer>
+</div>
+
+<script>
+/* ---------- pixel banner: sunset over a city with smokestacks ---------- */
+(function () {
+  "use strict";
+  var canvas = document.getElementById("banner");
+  var ctx = canvas.getContext("2d");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var H = 44, W = 192;
+  var SKY = ["#241b4d", "#5b2a86", "#b63b7f", "#e8615a", "#ffa14a", "#ffd07a"].map(hex);
+  var BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+  function css(c){return "rgb("+c[0]+","+c[1]+","+c[2]+")";}
+  function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;};}
+  var skyline = [], stacks = [], smoke = [];
+  function rebuild() {
+    var aspect = Math.max(2, (window.innerWidth || 1200) / 150);
+    W = Math.max(120, Math.min(420, Math.round(H * aspect)));
+    canvas.width = W; canvas.height = H;
+    var rnd = mulberry32(4242);
+    skyline = [];
+    var x = 0;
+    while (x < W) {
+      var bw = 6 + Math.floor(rnd() * 10);
+      var bh = 8 + Math.floor(rnd() * 14);
+      skyline.push({ x: x, w: bw, h: bh, win: rnd() });
+      x += bw + 1;
+    }
+    stacks = [];
+    var rs = mulberry32(777);
+    for (var i = 0; i < 4; i++) {
+      stacks.push({ x: Math.floor(W * (0.12 + 0.24 * i) + rs() * 10), h: 20 + Math.floor(rs() * 6) });
+    }
+    smoke = [];
+    for (var s = 0; s < stacks.length; s++) {
+      for (var p = 0; p < 6; p++) smoke.push({ st: s, t: p / 6, drift: rs() });
+    }
+  }
+  function draw(time) {
+    var horizon = H - 14;
+    for (var y = 0; y < horizon; y++) {
+      var v = y / (horizon - 1) * (SKY.length - 1);
+      var i0 = Math.floor(v), f = v - i0;
+      for (var x = 0; x < W; x++) {
+        var th = (BAYER[y & 3][x & 3] + 0.5) / 16;
+        ctx.fillStyle = css(SKY[f > th ? Math.min(i0 + 1, SKY.length - 1) : i0]);
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // sun with stripe cutouts
+    var sr = 9, sx = Math.round(W * 0.72), sy = horizon - 7;
+    ctx.fillStyle = "#ffd07a";
+    for (var dy = -sr; dy <= sr; dy++) {
+      var py = sy + dy;
+      if (py < 0 || py >= horizon) continue;
+      if (dy > 1 && py % 3 === 0) continue;
+      var hw = Math.floor(Math.sqrt(sr * sr - dy * dy));
+      ctx.fillRect(sx - hw, py, hw * 2 + 1, 1);
+    }
+    // city silhouette
+    ctx.fillStyle = "#160f31";
+    ctx.fillRect(0, horizon, W, H - horizon);
+    skyline.forEach(function (b) {
+      ctx.fillRect(b.x, horizon - b.h, b.w, b.h);
+    });
+    // lit windows
+    ctx.fillStyle = "#ffd07a";
+    skyline.forEach(function (b, i) {
+      if (b.win > 0.4) {
+        var wx = b.x + 1 + (i % Math.max(1, b.w - 2));
+        var wy = horizon - b.h + 2 + (i * 3) % Math.max(1, b.h - 3);
+        ctx.fillRect(b.x + 2, wy, 1, 1);
+        if (b.w > 8) ctx.fillRect(b.x + b.w - 3, horizon - b.h + 3, 1, 1);
+      }
+    });
+    // smokestacks
+    stacks.forEach(function (s) {
+      ctx.fillStyle = "#0d081f";
+      ctx.fillRect(s.x, horizon - s.h, 3, s.h);
+      ctx.fillRect(s.x - 1, horizon - s.h, 5, 2);
+    });
+    // smoke pixels
+    ctx.fillStyle = "rgba(210,200,230,0.5)";
+    smoke.forEach(function (p) {
+      var t = reduced ? p.t : (p.t + time / 9000) % 1;
+      var s = stacks[p.st];
+      var px = s.x + 1 + Math.round(Math.sin((t * 5 + p.drift * 7)) * (1 + t * 3));
+      var py = Math.round(horizon - s.h - 2 - t * (horizon - s.h - 4));
+      if (py > 1) ctx.fillRect(px, py, t > 0.5 ? 2 : 1, 1);
+    });
+  }
+  var last = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 1000 / 10) return;
+    last = now;
+    draw(now);
+  }
+  window.addEventListener("resize", function () { rebuild(); draw(0); });
+  rebuild();
+  draw(0);
+  if (!reduced) requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- data ---------- */
+  var GT2016 = 49.4; // GtCO2e total for the 2016 decomposition
+  var SUN = {
+    name: "All emissions", pct: 100, hue: null, children: [
+      { name: "Energy", pct: 73.2, hue: "energy", children: [
+        { name: "Energy use in industry", pct: 24.2, children: [
+          { name: "Other industry", pct: 10.6 },
+          { name: "Iron & steel", pct: 7.2 },
+          { name: "Chemical & petrochemical (energy)", pct: 3.6 },
+          { name: "Food & tobacco", pct: 1.0 },
+          { name: "Non-ferrous metals", pct: 0.7 },
+          { name: "Paper & pulp", pct: 0.6 },
+          { name: "Machinery", pct: 0.5 }
+        ]},
+        { name: "Energy use in buildings", pct: 17.5, children: [
+          { name: "Residential buildings", pct: 10.9 },
+          { name: "Commercial buildings", pct: 6.6 }
+        ]},
+        { name: "Transport", pct: 16.2, children: [
+          { name: "Road transport", pct: 11.9 },
+          { name: "Aviation", pct: 1.9 },
+          { name: "Shipping", pct: 1.7 },
+          { name: "Rail", pct: 0.4 },
+          { name: "Pipeline", pct: 0.3 }
+        ]},
+        { name: "Unallocated fuel combustion", pct: 7.8 },
+        { name: "Fugitive emissions from energy", pct: 5.8, children: [
+          { name: "Oil & gas (fugitive)", pct: 3.9 },
+          { name: "Coal (fugitive)", pct: 1.9 }
+        ]},
+        { name: "Energy in agriculture & fishing", pct: 1.7 }
+      ]},
+      { name: "Agriculture, forestry & land use", pct: 18.4, hue: "afolu", children: [
+        { name: "Livestock & manure", pct: 5.8 },
+        { name: "Agricultural soils", pct: 4.1 },
+        { name: "Crop burning", pct: 3.5 },
+        { name: "Deforestation", pct: 2.2 },
+        { name: "Cropland", pct: 1.4 },
+        { name: "Rice cultivation", pct: 1.3 },
+        { name: "Grassland", pct: 0.1 }
+      ]},
+      { name: "Direct industrial processes", pct: 5.2, hue: "ip", children: [
+        { name: "Cement (process)", pct: 3.0 },
+        { name: "Chemicals & petrochemicals (process)", pct: 2.2 }
+      ]},
+      { name: "Waste", pct: 3.2, hue: "waste", children: [
+        { name: "Landfills", pct: 1.9 },
+        { name: "Wastewater", pct: 1.3 }
+      ]}
+    ]
+  };
+
+  // [year, ElecHeat, Industry, Transport, Agriculture, Buildings, OtherEnergy, Waste, LUCF] in Gt
+  var TR = [[1990,8.62,5.06,5.36,5.16,3.23,3.39,1.34,2.31],[1991,8.77,4.99,5.41,5.14,3.26,3.39,1.37,2.31],[1992,8.92,4.87,5.55,5.12,3.16,3.24,1.44,2.31],[1993,8.97,4.83,5.59,5.09,3.23,3.26,1.51,2.31],[1994,9.07,4.9,5.71,5.13,3.14,3.23,1.58,2.31],[1995,9.26,5.2,5.88,5.19,3.22,3.26,1.58,2.32],[1996,9.63,5.11,6.11,5.22,3.29,3.25,1.59,2.12],[1997,9.9,5.18,6.21,5.14,3.27,3.31,1.58,3.12],[1998,10.13,5.16,6.36,5.2,3.12,3.26,1.58,2.44],[1999,10.19,5.01,6.57,5.25,3.19,3.25,1.58,2.24],[2000,10.59,5.2,6.77,5.25,3.17,3.31,1.58,2.08],[2001,10.85,5.25,6.77,5.25,3.19,3.34,1.56,0.18],[2002,11.03,5.31,6.97,5.31,3.2,3.31,1.57,0.71],[2003,11.65,5.6,7.1,5.31,3.29,3.52,1.57,0.4],[2004,12.03,6.13,7.47,5.42,3.33,3.65,1.56,0.78],[2005,12.41,6.66,7.66,5.45,3.33,3.81,1.56,0.49],[2006,12.91,7.02,7.87,5.51,3.3,3.85,1.57,0.86],[2007,13.47,7.44,8.14,5.59,3.28,3.9,1.59,0.32],[2008,13.5,7.58,8.15,5.6,3.35,3.94,1.6,0.27],[2009,13.28,7.61,7.96,5.6,3.29,3.84,1.61,0.67],[2010,14.2,8.26,8.32,5.65,3.35,3.97,1.63,0.35],[2011,14.81,8.62,8.46,5.78,3.29,4.07,1.61,-0.17],[2012,15.11,8.75,8.45,5.81,3.22,4.1,1.64,-0.14],[2013,15.41,8.9,8.65,5.75,3.33,4.13,1.65,-0.19],[2014,15.34,9.05,8.81,5.8,3.28,4.16,1.7,0.17],[2015,15.08,8.89,9.11,5.82,3.3,4.1,1.74,0.2],[2016,15.1,8.83,9.32,5.86,3.33,4.02,1.76,0.03],[2017,15.45,8.86,9.57,5.95,3.4,4.03,1.79,-0.02],[2018,15.86,9.04,9.8,5.92,3.43,4.1,1.82,0.15],[2019,15.78,9.15,9.88,5.91,3.38,4.14,1.85,0.43],[2020,15.31,9.12,8.36,6.04,3.33,3.85,1.87,0.02],[2021,16.44,9.36,8.99,6.09,3.37,3.9,1.89,0.25],[2022,16.65,9.31,9.43,6.11,3.29,3.96,1.9,0.2],[2023,17.01,9.38,9.71,6.24,3.2,4.04,1.95,0.47]];
+  var SERIES = [
+    { key: "Electricity & heat", short: "Electricity & heat", v: "--s1" },
+    { key: "Industry & manufacturing", short: "Industry & mfg.", v: "--s2" },
+    { key: "Transport (incl. aviation & shipping)", short: "Transport", v: "--s3" },
+    { key: "Agriculture", short: "Agriculture", v: "--s4" },
+    { key: "Buildings (direct)", short: "Buildings", v: "--s5" },
+    { key: "Other energy (fugitive & unallocated)", short: "Other energy", v: "--s6" },
+    { key: "Waste", short: "Waste", v: "--s7" },
+    { key: "Land-use change & forestry (net)", short: "Land use (net)", v: "--s8" }
+  ];
+  // stack order bottom→top: land use first so its sign flips stay at the baseline
+  var ORDER = [7, 0, 1, 2, 3, 4, 5, 6];
+
+  var FUELS = [
+    { name: "Coal", gt: 16.0, v: "--f1" },
+    { name: "Oil", gt: 12.6, v: "--f2" },
+    { name: "Natural gas", gt: 8.0, v: "--f3" },
+    { name: "Cement", gt: 1.4, v: "--f4" }
+  ];
+
+  /* ---------- helpers ---------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function fmtGt(x) { return (Math.round(x * 100) / 100).toFixed(2); }
+  function fmtGt1(x) { return (Math.round(x * 10) / 10).toFixed(1); }
+
+  // annotate hierarchy: ids, parents, depth, sector hue
+  var idc = 0;
+  (function walk(n, parent, hue, depth) {
+    n.id = "n" + (idc++); n.parent = parent; n.depth = depth;
+    n.hue = n.hue || hue;
+    (n.children || []).forEach(function (c) { walk(c, n, n.hue, depth + 1); });
+  })(SUN, null, null, 0);
+
+  function nodeFill(n) {
+    if (n.depth === 0) return "var(--surface-2)";
+    var base = "var(--sec-" + n.hue + ")";
+    var sibs = n.parent.children;
+    var i = sibs.indexOf(n);
+    var mix;
+    if (n.depth === 1) mix = 0;
+    else if (n.depth === 2) mix = 22 + (i % 2) * 16;      // 22 / 38 alternating
+    else mix = 46 + (i % 2) * 16;                          // 46 / 62 alternating
+    return mix === 0 ? base : "color-mix(in oklab, " + base + ", var(--surface-1) " + mix + "%)";
+  }
+
+  /* ---------- sunburst ---------- */
+  var svg = document.getElementById("sunburst");
+  var hint = document.getElementById("sunhint");
+  var suntt = document.getElementById("suntt");
+  var CX = 220, CY = 220, R0 = 62, RMAX = 214;
+  var root = SUN, focus = SUN;
+
+  function arcPath(a0, a1, r0, r1) {
+    // full-circle wedge fix
+    if (a1 - a0 >= Math.PI * 2 - 1e-4) a1 = a0 + Math.PI * 2 - 1e-4;
+    var large = (a1 - a0) > Math.PI ? 1 : 0;
+    function pt(a, r) { return (CX + r * Math.sin(a)).toFixed(2) + " " + (CY - r * Math.cos(a)).toFixed(2); }
+    return "M" + pt(a0, r1) + " A" + r1 + " " + r1 + " 0 " + large + " 1 " + pt(a1, r1) +
+           " L" + pt(a1, r0) + " A" + r0 + " " + r0 + " 0 " + large + " 0 " + pt(a0, r0) + " Z";
+  }
+
+  function maxDepthBelow(n) {
+    if (!n.children || !n.children.length) return 0;
+    return 1 + Math.max.apply(null, n.children.map(maxDepthBelow));
+  }
+
+  function drawSun() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var levels = Math.max(1, maxDepthBelow(focus));
+    var band = (RMAX - R0) / levels;
+
+    // center
+    var g = el("g", { "class": "sun-center" }, svg);
+    el("circle", { cx: CX, cy: CY, r: R0 - 6, fill: "var(--surface-2)" }, g);
+    var t1 = el("text", { x: CX, y: CY - 8, "text-anchor": "middle", "font-size": "13", "font-weight": "600", fill: "var(--ink-1)" }, g);
+    t1.textContent = focus === root ? "49.4 Gt" : focus.name.length > 18 ? focus.name.slice(0, 17) + "…" : focus.name;
+    var t2 = el("text", { x: CX, y: CY + 10, "text-anchor": "middle", "font-size": "11", fill: "var(--ink-3)" }, g);
+    t2.textContent = focus === root ? "CO₂e · 2016" : fmtGt1(focus.pct) + "% of global";
+    var t3 = el("text", { x: CX, y: CY + 26, "text-anchor": "middle", "font-size": "10", fill: "var(--ink-3)" }, g);
+    t3.textContent = focus === root ? "" : "click to zoom out";
+    g.addEventListener("click", function () {
+      if (focus.parent) { focus = focus.parent; drawSun(); syncHint(); }
+    });
+
+    (function layout(n, a0, a1, depth) {
+      var kids = n.children || [];
+      var sum = kids.reduce(function (s, c) { return s + c.pct; }, 0);
+      if (!sum) return;
+      var a = a0;
+      kids.forEach(function (c) {
+        var sw = (a1 - a0) * (c.pct / sum);
+        var r0 = R0 + (depth - 1) * band + 1, r1 = R0 + depth * band - 1;
+        var p = el("path", {
+          d: arcPath(a, a + sw, r0, r1),
+          stroke: "var(--surface-1)", "stroke-width": "2",
+          tabindex: "0", role: "button",
+          "aria-label": c.name + ", " + fmtGt1(c.pct) + "% of global emissions"
+        }, svg);
+        p.style.fill = nodeFill(c);
+        p.dataset.id = c.id;
+        p.addEventListener("click", function () {
+          if (c.children && c.children.length) { focus = c; drawSun(); syncHint(); }
+          revealInTree(c);
+        });
+        p.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); p.dispatchEvent(new Event("click")); }
+        });
+        p.addEventListener("mousemove", function (ev) { showSunTT(ev, c); highlightRow(c.id, true); });
+        p.addEventListener("mouseleave", function () { suntt.style.display = "none"; highlightRow(c.id, false); });
+        if (depth < levels && c.children) layout(c, a, a + sw, depth + 1);
+        a += sw;
+      });
+    })(focus, 0, Math.PI * 2, 1);
+  }
+
+  function showSunTT(ev, n) {
+    var wrap = document.getElementById("sunwrap");
+    var b = wrap.getBoundingClientRect();
+    suntt.innerHTML = "<h4>" + n.name + "</h4>" +
+      "<div class='r'><span class='l'>Share of global</span><b>" + fmtGt1(n.pct) + "%</b></div>" +
+      "<div class='r'><span class='l'>≈ emissions</span><b>" + fmtGt(GT2016 * n.pct / 100) + " Gt</b></div>" +
+      (n.parent && n.parent.depth > 0 ? "<div class='r'><span class='l'>Within " + n.parent.name + "</span><b>" + fmtGt1(100 * n.pct / n.parent.pct) + "%</b></div>" : "");
+    suntt.style.display = "block";
+    var x = ev.clientX - b.left + 14, y = ev.clientY - b.top + 14;
+    if (x + 230 > b.width) x -= 250;
+    suntt.style.left = x + "px"; suntt.style.top = y + "px";
+  }
+
+  function syncHint() {
+    hint.textContent = focus === root
+      ? "Showing all sectors — click a wedge to zoom"
+      : "Zoomed: " + focus.name + " (" + fmtGt1(focus.pct) + "% of global) — click the centre to zoom out";
+  }
+
+  /* ---------- hierarchy list ---------- */
+  var tree = document.getElementById("tree");
+  var rowIndex = {};
+  function buildTree() {
+    tree.innerHTML = "";
+    (function rec(n) {
+      (n.children || []).forEach(function (c) {
+        var row = document.createElement("div");
+        row.className = "trow d" + c.depth;
+        row.dataset.id = c.id;
+        var open = c.depth < 2;
+        row.innerHTML =
+          "<button class='togg" + (c.children ? "" : " leaf") + "' aria-label='toggle'>" + (c.children ? (open ? "▾" : "▸") : "") + "</button>" +
+          "<div class='nm'><span class='chip'></span><span class='lbl'>" + c.name + "</span></div>" +
+          "<div class='bar'><i></i></div>" +
+          "<div class='pct mono'>" + fmtGt1(c.pct) + "%</div>" +
+          "<div class='gt mono'>" + fmtGt(GT2016 * c.pct / 100) + "</div>";
+        row.querySelector(".chip").style.background = nodeFill(c);
+        row.querySelector(".bar i").style.width = Math.max(1.2, c.pct / 73.2 * 100) + "%";
+        row.querySelector(".bar i").style.background = nodeFill(c);
+        tree.appendChild(row);
+        rowIndex[c.id] = row;
+        c._row = row; c._open = open;
+        row.addEventListener("click", function () { toggle(c); });
+        rec(c);
+      });
+    })(SUN);
+    // header line for the Gt column
+    var hd = document.createElement("div");
+    hd.className = "trow"; hd.style.color = "var(--ink-3)"; hd.style.fontSize = "11px";
+    hd.innerHTML = "<span></span><div class='nm'>Source</div><div></div><div class='pct'>share</div><div class='gt'>Gt</div>";
+    tree.insertBefore(hd, tree.firstChild);
+    applyVisibility();
+  }
+  function toggle(n) {
+    if (!n.children) return;
+    n._open = !n._open;
+    n._row.querySelector(".togg").textContent = n._open ? "▾" : "▸";
+    applyVisibility();
+  }
+  function applyVisibility() {
+    (function rec(n, visible) {
+      (n.children || []).forEach(function (c) {
+        c._row.style.display = visible ? "grid" : "none";
+        rec(c, visible && !!c._open);
+      });
+    })(SUN, true);
+  }
+  function revealInTree(n) {
+    var p = n.parent;
+    while (p) { if (p.children) { p._open = true; if (p._row) p._row.querySelector(".togg").textContent = "▾"; } p = p.parent; }
+    applyVisibility();
+    if (n._row) {
+      n._row.classList.add("hi");
+      n._row.scrollIntoView({ block: "nearest" });
+      setTimeout(function () { n._row.classList.remove("hi"); }, 1400);
+    }
+  }
+  function highlightRow(id, on) {
+    var r = rowIndex[id];
+    if (r) r.classList.toggle("hi", on);
+  }
+
+  /* ---------- trends stacked area ---------- */
+  var tsvg = document.getElementById("trend");
+  var trtt = document.getElementById("trtt");
+  var W = 1080, H = 420, ML = 46, MR = 150, MT = 16, MB = 34;
+  var iw = W - ML - MR, ih = H - MT - MB;
+  var YMIN = -1, YMAX = 56;
+  var years = TR.map(function (r) { return r[0]; });
+  function xOf(y) { return ML + (y - years[0]) / (years[years.length - 1] - years[0]) * iw; }
+  function yOf(v) { return MT + (YMAX - v) / (YMAX - YMIN) * ih; }
+  var isolated = null; // series index or null
+
+  function stackAt(ri) {
+    // diverging offset in ORDER: positives up from 0, negatives down from 0
+    var pos = 0, neg = 0, out = [];
+    for (var k = 0; k < 8; k++) {
+      var s = ORDER[k];
+      var v = TR[ri][s + 1];
+      if (v >= 0) { out[s] = [pos, pos + v]; pos += v; }
+      else { out[s] = [neg + v, neg]; neg += v; }
+    }
+    return out;
+  }
+
+  function drawTrend() {
+    while (tsvg.firstChild) tsvg.removeChild(tsvg.firstChild);
+    // grid + y labels
+    for (var gv = 0; gv <= 55; gv += 10) {
+      el("line", { x1: ML, x2: ML + iw, y1: yOf(gv), y2: yOf(gv), stroke: gv === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, tsvg);
+      var yl = el("text", { x: ML - 8, y: yOf(gv) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, tsvg);
+      yl.textContent = gv;
+    }
+    var unit = el("text", { x: ML - 36, y: MT + 10, "font-size": 11, fill: "var(--ink-3)" }, tsvg);
+    unit.textContent = "Gt";
+    // x labels
+    [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2023].forEach(function (y) {
+      var xl = el("text", { x: xOf(y), y: H - 10, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, tsvg);
+      xl.textContent = y;
+    });
+
+    var stacks = TR.map(function (_, ri) { return stackAt(ri); });
+    for (var s = 0; s < 8; s++) {
+      if (isolated !== null && isolated !== s) continue;
+      var top = "", bot = "";
+      for (var ri = 0; ri < TR.length; ri++) {
+        var seg = isolated === null ? stacks[ri][s] : (TR[ri][s + 1] >= 0 ? [0, TR[ri][s + 1]] : [TR[ri][s + 1], 0]);
+        top += (ri ? "L" : "M") + xOf(years[ri]).toFixed(1) + " " + yOf(seg[1]).toFixed(1);
+      }
+      for (ri = TR.length - 1; ri >= 0; ri--) {
+        seg = isolated === null ? stacks[ri][s] : (TR[ri][s + 1] >= 0 ? [0, TR[ri][s + 1]] : [TR[ri][s + 1], 0]);
+        bot += "L" + xOf(years[ri]).toFixed(1) + " " + yOf(seg[0]).toFixed(1);
+      }
+      var band = el("path", { d: top + bot + "Z", stroke: "var(--surface-1)", "stroke-width": 1.5 }, tsvg);
+      band.style.fill = "var(" + SERIES[s].v + ")";
+      band.style.fillOpacity = "0.92";
+      band.dataset.s = s;
+    }
+
+    // direct labels for 4 largest bands at right edge (full stack view only)
+    if (isolated === null) {
+      var last = stacks[stacks.length - 1];
+      [0, 1, 2, 3].forEach(function (s) {
+        var mid = (last[s][0] + last[s][1]) / 2;
+        var lb = el("text", { x: ML + iw + 8, y: yOf(mid) + 4, "font-size": 12, "font-weight": 600, fill: "var(--ink-2)" }, tsvg);
+        lb.textContent = SERIES[s].short;
+        var chipEl = el("rect", { x: ML + iw + 8, y: yOf(mid) - 14, width: 10, height: 4, rx: 2 }, tsvg);
+        chipEl.style.fill = "var(" + SERIES[s].v + ")";
+      });
+    }
+
+    // crosshair capture
+    var cross = el("line", { y1: MT, y2: MT + ih, stroke: "var(--axis)", "stroke-width": 1, opacity: 0 }, tsvg);
+    var cap = el("rect", { x: ML, y: MT, width: iw, height: ih, fill: "transparent" }, tsvg);
+    cap.addEventListener("mousemove", function (ev) {
+      var pt = tsvg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      var loc = pt.matrixTransform(tsvg.getScreenCTM().inverse());
+      var yr = Math.round(years[0] + (loc.x - ML) / iw * (years[years.length - 1] - years[0]));
+      yr = Math.max(years[0], Math.min(years[years.length - 1], yr));
+      var ri = yr - years[0];
+      cross.setAttribute("x1", xOf(yr)); cross.setAttribute("x2", xOf(yr));
+      cross.setAttribute("opacity", 1);
+      var tot = TR[ri].slice(1).reduce(function (a, b) { return a + b; }, 0);
+      var html = "<h4>" + yr + " — total " + fmtGt1(tot) + " Gt</h4>";
+      for (var k = 7; k >= 0; k--) {
+        var s = ORDER[k];
+        html += "<div class='r'><span class='l'><span class='chip' style='background:var(" + SERIES[s].v + ")'></span>" +
+          SERIES[s].short + "</span><b>" + fmtGt(TR[ri][s + 1]) + "</b></div>";
+      }
+      trtt.innerHTML = html;
+      trtt.style.display = "block";
+      var wb = document.getElementById("trendwrap").getBoundingClientRect();
+      var px = (xOf(yr) / W) * wb.width;
+      var lx = px + 16; if (lx + 240 > wb.width) lx = px - 256;
+      trtt.style.left = lx + "px";
+      trtt.style.top = "24px";
+    });
+    cap.addEventListener("mouseleave", function () { trtt.style.display = "none"; cross.setAttribute("opacity", 0); });
+  }
+
+  // legend
+  var lg = document.getElementById("trlegend");
+  SERIES.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.innerHTML = "<span class='chip' style='background:var(" + s.v + ")'></span>" + s.key;
+    b.addEventListener("click", function () {
+      isolated = isolated === i ? null : i;
+      Array.prototype.forEach.call(lg.children, function (c, j) {
+        c.classList.toggle("dim", isolated !== null && isolated !== j);
+      });
+      drawTrend();
+    });
+    lg.appendChild(b);
+  });
+
+  // data table
+  (function () {
+    var t = "<table><tr><th>Year</th>";
+    SERIES.forEach(function (s) { t += "<th>" + s.short + "</th>"; });
+    t += "<th>Total</th></tr>";
+    TR.forEach(function (r) {
+      var tot = r.slice(1).reduce(function (a, b) { return a + b; }, 0);
+      t += "<tr><td>" + r[0] + "</td>";
+      for (var s = 1; s <= 8; s++) t += "<td>" + fmtGt(r[s]) + "</td>";
+      t += "<td><b>" + fmtGt1(tot) + "</b></td></tr>";
+    });
+    t += "</table>";
+    document.getElementById("trtable").innerHTML = t;
+  })();
+
+  /* ---------- fuel bar ---------- */
+  (function () {
+    var bar = document.getElementById("fuelbar");
+    var key = document.getElementById("fuelkey");
+    var tot = FUELS.reduce(function (a, f) { return a + f.gt; }, 0);
+    FUELS.forEach(function (f) {
+      var d = document.createElement("div");
+      var share = f.gt / tot * 100;
+      d.style.width = share + "%";
+      d.style.background = "var(" + f.v + ")";
+      if (share > 25) { d.textContent = f.name; d.style.color = "#140e2b"; }
+      d.title = f.name + " — " + fmtGt1(f.gt) + " Gt (" + Math.round(share) + "%)";
+      bar.appendChild(d);
+      var k = document.createElement("div");
+      k.className = "r";
+      k.innerHTML = "<span class='chip' style='background:var(" + f.v + ")'></span>" + f.name +
+        " <b class='mono'>" + fmtGt1(f.gt) + " Gt</b> · " + Math.round(share) + "%";
+      key.appendChild(k);
+    });
+  })();
+
+  buildTree();
+  drawSun();
+  drawTrend();
+})();
+</script>
+</body>
+</html>
