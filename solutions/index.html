@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solutions — Kamber Lucas</title>
+<meta name="description" content="The climate and nature tech counterattack: collapsing costs, record deployment, the builders funding it, and how the curves could bend over the next 5–20 years.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌅</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --page: #140e2b;
+    --surface-1: #1e1640;
+    --surface-2: #2a1f55;
+    --ink-1: #f2edff;
+    --ink-2: #b9aed6;
+    --ink-3: #7d729e;
+    --grid: #2e2455;
+    --axis: #453a6e;
+    --ring: rgba(255,255,255,.08);
+    --critical: #ff6b7a;
+    --good: #4ecb52; --goodfill: #4ecb52;
+    --gold: #ffd07a; --sunset: #ff8a4a; --magenta: #e85d9c;
+    /* categorical slots (validated on #211943, dark) */
+    --s1: #3d8ee6; --s2: #e06a2a; --s3: #189f7d; --s4: #b38a10;
+    --s5: #e05a9f; --s6: #62ab27; --s7: #8f7af0; --s8: #e04a58;
+    /* sector hues carried over from the Carbon Atlas */
+    --sec-energy: #3d8ee6; --sec-afolu: #62ab27; --sec-ip: #e06a2a; --sec-waste: #8f7af0;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink-1);
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 64px; }
+
+  .scan {
+    position: fixed; inset: 0; pointer-events: none; z-index: 60;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 3px,
+      rgba(0,0,0,.05) 3px, rgba(0,0,0,.05) 4px);
+  }
+
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    max-width: 1180px; margin: 0 auto; padding: 18px 24px;
+  }
+  .topnav .brand {
+    font-family: "Press Start 2P", monospace; font-size: 12px; text-decoration: none;
+    color: var(--gold); text-shadow: 0 0 12px rgba(255,208,122,.45);
+  }
+  .topnav .links { display: flex; gap: 18px; flex-wrap: wrap; }
+  .topnav .links a {
+    font-family: "Press Start 2P", monospace; font-size: 9px; text-decoration: none;
+    color: var(--ink-2); padding: 6px 2px; letter-spacing: .04em;
+  }
+  .topnav .links a:hover { color: var(--gold); }
+  .topnav .links a.on { color: var(--gold); border-bottom: 3px solid var(--gold); }
+
+  #banner { display: block; width: 100%; height: 150px; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+  header.site { padding: 34px 0 8px; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(20px, 3.4vw, 34px); font-weight: 400; line-height: 1.35;
+    margin: 14px 0 10px;
+    background: linear-gradient(100deg, var(--gold), #9be24a 60%, #4ecb52);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .byline { font-size: 13px; color: var(--ink-3); margin: 0 0 14px; }
+  .byline b { color: var(--ink-2); font-weight: 600; }
+  .byline a { color: var(--ink-2); }
+  .lede { max-width: 70ch; color: var(--ink-2); font-size: 15px; margin: 0 0 24px; }
+
+  .intro { border-left: 4px solid var(--gold); margin-bottom: 26px; }
+  .intro h2 { margin-top: 0; }
+  .intro p { font-size: 14px; color: var(--ink-2); max-width: 88ch; margin: 0 0 10px; }
+  .intro p b, .intro p strong { color: var(--ink-1); }
+  .intro a { color: var(--ink-1); }
+  .howto {
+    background: var(--surface-2); border: 1px solid var(--ring);
+    padding: 12px 16px; margin: 0 0 16px; font-size: 13px; color: var(--ink-2);
+  }
+  .howto .tag {
+    font-family: "Press Start 2P", monospace; font-size: 8px; color: var(--gold);
+    display: inline-block; margin-right: 8px; letter-spacing: .06em;
+  }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 40px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--ring); border-top: 3px solid var(--good); padding: 16px 18px; }
+  .tile .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .tile .v {
+    font-family: "Press Start 2P", monospace; font-size: 17px; font-weight: 400;
+    margin: 12px 0 8px; color: var(--good); text-shadow: 0 0 10px rgba(78,203,82,.35);
+  }
+  .tile .v small { font-size: 10px; color: var(--ink-2); font-family: "IBM Plex Mono", monospace; }
+  .tile .d { font-size: 12px; color: var(--ink-2); }
+  .tile.gold { border-top-color: var(--gold); }
+  .tile.gold .v { color: var(--gold); text-shadow: 0 0 10px rgba(255,208,122,.35); }
+
+  h2 {
+    font-family: "Press Start 2P", monospace; font-size: 14px; font-weight: 400;
+    line-height: 1.5; letter-spacing: .01em; margin: 0 0 10px; color: var(--ink-1);
+  }
+  h3 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+  .subhead { font-size: 13.5px; color: var(--ink-2); margin: 0 0 14px; max-width: 82ch; }
+  section { margin-bottom: 56px; }
+  .panel { background: var(--surface-1); border: 1px solid var(--ring); padding: 20px; box-shadow: 0 0 28px rgba(255,208,122,.05); }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .cols2 { grid-template-columns: 1fr; } }
+
+  /* charts */
+  .chartwrap { position: relative; }
+  .chartwrap svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; font-size: 12.5px; color: var(--ink-2); }
+  .legend .r { display: flex; align-items: center; gap: 6px; }
+  .chip { width: 10px; height: 10px; flex: none; }
+  .tt {
+    position: absolute; pointer-events: none; z-index: 5; display: none;
+    background: var(--surface-2); border: 1px solid var(--axis);
+    box-shadow: 0 4px 16px rgba(0,0,0,.4); padding: 10px 12px; font-size: 12px; min-width: 190px;
+  }
+  .tt h4 { margin: 0 0 6px; font-size: 12px; }
+  .tt .r { display: flex; align-items: center; gap: 6px; justify-content: space-between; padding: 1px 0; color: var(--ink-2); }
+  .tt .r b { color: var(--ink-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tt .r .l { display: flex; align-items: center; gap: 6px; }
+
+  /* solutions-to-sources map */
+  .maprow {
+    display: grid; grid-template-columns: 200px 110px 1fr; gap: 14px; align-items: start;
+    padding: 14px 0; border-bottom: 1px solid var(--grid);
+  }
+  .maprow:last-child { border-bottom: 0; }
+  .maprow .src .nm { font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .maprow .src .sh { font-size: 12px; color: var(--ink-3); margin-top: 2px; padding-left: 18px; }
+  .maprow .bar { height: 14px; background: var(--surface-2); position: relative; margin-top: 3px; }
+  .maprow .bar i { position: absolute; top: 0; bottom: 0; left: 0; }
+  .maprow .sol { font-size: 12.5px; color: var(--ink-2); }
+  .maprow .sol .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+  .schip {
+    display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 9px;
+    background: var(--surface-2); border: 1px solid var(--axis); color: var(--ink-1);
+  }
+  .stat { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; letter-spacing: .05em; text-transform: uppercase; }
+  .stat.now { background: rgba(78,203,82,.15); color: var(--good); }
+  .stat.scaling { background: rgba(255,208,122,.14); color: var(--gold); }
+  .stat.emerging { background: rgba(61,142,230,.16); color: #6fb0f5; }
+  @media (max-width: 760px) { .maprow { grid-template-columns: 1fr; gap: 8px; } .maprow .src .sh { padding-left: 18px; } }
+
+  /* builder cards */
+  .orgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .org { background: var(--surface-1); border: 1px solid var(--ring); border-top: 4px solid var(--s1); padding: 16px 18px; }
+  .org .t { font-weight: 700; font-size: 14.5px; }
+  .org .m { font-family: "Press Start 2P", monospace; font-size: 11px; color: var(--gold); margin: 10px 0 8px; text-shadow: 0 0 8px rgba(255,208,122,.3); }
+  .org .d { font-size: 12.5px; color: var(--ink-2); }
+  .org .f { font-size: 11px; color: var(--ink-3); margin-top: 8px; }
+
+  /* wins cards */
+  .wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .win { background: var(--surface-1); border: 1px solid var(--ring); border-left: 4px solid var(--goodfill); padding: 14px 16px; }
+  .win .t { font-weight: 600; font-size: 13.5px; }
+  .win .v { font-family: "Press Start 2P", monospace; font-size: 13px; color: var(--good); margin: 8px 0 6px; text-shadow: 0 0 10px rgba(78,203,82,.3); }
+  .win .d { font-size: 12px; color: var(--ink-2); }
+
+  /* timeline */
+  .era { display: grid; grid-template-columns: 150px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--grid); }
+  .era:last-child { border-bottom: 0; }
+  .era .when { font-family: "Press Start 2P", monospace; font-size: 11px; color: var(--gold); line-height: 1.6; }
+  .era .when small { display: block; font-family: "Archivo", sans-serif; font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; margin-top: 6px; }
+  .era ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+  .era li { margin-bottom: 7px; }
+  .era li b { color: var(--ink-1); }
+  @media (max-width: 700px) { .era { grid-template-columns: 1fr; gap: 8px; } }
+
+  .flags { font-size: 12px; color: var(--ink-2); background: var(--surface-2); padding: 10px 14px; margin-top: 14px; }
+
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 22px; font-size: 13px; }
+  .gloss dt { font-weight: 700; color: var(--gold); margin-top: 8px; }
+  .gloss dd { margin: 2px 0 0; color: var(--ink-2); }
+
+  .companion { display: block; text-decoration: none; border-left: 4px solid var(--magenta); margin-bottom: 26px; }
+  .companion .t { font-family: "Press Start 2P", monospace; font-size: 12px; color: var(--magenta); margin-bottom: 10px; }
+  .companion p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  .companion:hover .t { text-shadow: 0 0 10px rgba(232,93,156,.5); }
+
+  footer.src { border-top: 1px solid var(--grid); padding-top: 20px; font-size: 13px; color: var(--ink-2); }
+  footer.src h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); margin: 0 0 10px; }
+  footer.src p { max-width: 92ch; margin: 0 0 10px; }
+  footer.src a { color: inherit; text-decoration-color: var(--ink-3); text-underline-offset: 2px; }
+  footer.src a:hover { color: var(--ink-1); }
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<nav class="topnav">
+  <a class="brand" href="/">KAMBER LUCAS</a>
+  <div class="links">
+    <a href="/">HOME</a>
+    <a href="/carbon-atlas/">CARBON ATLAS</a>
+    <a href="/nature-atlas/">NATURE ATLAS</a>
+    <a href="/solutions/" class="on">SOLUTIONS</a>
+  </div>
+</nav>
+
+<canvas id="banner" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header class="site">
+    <div class="eyebrow">The counterattack · compiled from IEA · Lazard · BloombergNEF · SolarPower Europe · IRENA · Carbon Brief</div>
+    <h1>SOLUTIONS</h1>
+    <p class="byline">Compiled by <b>Kamber Lucas</b> · Data current as of August 2026 · Companions: <a href="/carbon-atlas/">Carbon Atlas</a> · <a href="/nature-atlas/">Nature Atlas</a></p>
+    <p class="lede">The atlases chart the damage. This page charts the counterattack: the technologies whose costs have collapsed, the capital and organisations scaling them, the trend lines already bending — and a grounded look at how much could change in the next 5 to 20 years.</p>
+
+    <div class="panel intro">
+      <h2>START HERE</h2>
+      <p><strong>Why optimism is warranted — and what kind.</strong> The core fact of the past fifteen years is that clean technology got <b>cheap faster than almost anyone predicted</b>. Solar power costs fell ~90%, battery packs ~92%, and both kept falling after every forecast said they would level off. Cheap technology changes everything: it stops being a sacrifice and starts being the default choice, which is why the world now invests <b>almost twice as much in clean energy as in fossil fuels</b>.</p>
+      <p><strong>The mechanism to understand:</strong> these are not straight-line trends but <b>S-curves</b> — adoption starts slow, hits a tipping point where the new thing is simply better and cheaper, then takes over rapidly (as cars replaced horses in ~15 years). Solar, wind, batteries and EVs are on the steep part of that curve now. The bet described on this page is that steel, cement, shipping, food and carbon removal follow the same path over the next two decades — and that when emissions reach zero, physics says <b>warming essentially stops</b>.</p>
+      <p><strong>Same rules as the atlases:</strong> every number here is real and traceable to a public source. Projections are clearly labelled as projections. The optimism is earned, not assumed — and the honest caveats are at the bottom of the page.</p>
+    </div>
+
+    <div class="tiles">
+      <div class="tile gold">
+        <div class="k">Clean energy investment · 2026</div>
+        <div class="v">$2.2<small>trillion</small></div>
+        <div class="d">Nearly double the $1.2T going to fossil fuels — the widest gap in history · IEA</div>
+      </div>
+      <div class="tile">
+        <div class="k">Solar added · 2025</div>
+        <div class="v">664 <small>GW</small></div>
+        <div class="d">A record — the global solar fleet passed 3 terawatts in early 2026, tripling in four years · SolarPower Europe</div>
+      </div>
+      <div class="tile">
+        <div class="k">Battery pack price · 2025</div>
+        <div class="v">$108<small>/kWh</small></div>
+        <div class="d">Down ~92% from ~$1,400 in 2010 — below the $100 cost-parity line for EV packs · BloombergNEF</div>
+      </div>
+      <div class="tile">
+        <div class="k">New cars electric · 2025</div>
+        <div class="v">1 in 4</div>
+        <div class="d">20.7 million EVs sold — over 25% of the world market, up from ~1% a decade ago · IEA</div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>THE COST COLLAPSE</h2>
+    <p class="subhead">This is the engine of everything else on this page. In 2010, solar was among the most expensive ways to make electricity; today it is the cheapest source of new power in most of the world, for the tenth year running. Batteries followed the same "learning curve": every doubling of production makes them predictably cheaper. Nobody legislated this — it compounded.</p>
+    <div class="howto"><span class="tag">HOW TO READ</span>Each line is a technology's cost <b>indexed to 2010 = 100</b>, so you can compare their falls: a line at 10 means the price dropped 90%. Lines are drawn through the published values of each source's series (IRENA for solar and wind generation costs, BloombergNEF for battery packs); small upticks around 2022 are the real supply-chain shock — which the curves then shrugged off. Hover for values.</div>
+    <div class="panel">
+      <div class="legend" id="costlegend"></div>
+      <div class="chartwrap" id="costwrap">
+        <svg id="costchart" viewBox="0 0 1080 380" role="img" aria-label="Line chart of indexed cost declines 2010 to 2025: solar electricity down about 90 percent, battery packs down about 92 percent, onshore wind down about 68 percent"></svg>
+        <div class="tt" id="costtt"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>THE DEPLOYMENT SURGE</h2>
+    <p class="subhead">Cheap technology gets built. Renewables made up 49% of all installed power capacity worldwide by the end of 2025, and solar alone now supplies ~9% of global electricity — a number that was a rounding error in 2010. Electric vehicles crossed from novelty to mainstream in under a decade.</p>
+    <div class="howto"><span class="tag">HOW TO READ</span>Left: gigawatts of new solar built <b>each year</b> — note this is annual additions, not the total, and the bars keep getting taller. Right: the share of the world's new cars that are electric — a classic S-curve leaving its slow phase. Hover for values.</div>
+    <div class="cols2">
+      <div class="panel">
+        <h3>Solar built per year, worldwide <span style="font-weight:400;color:var(--ink-3)">(GW added)</span></h3>
+        <div class="chartwrap" id="solarwrap">
+          <svg id="solarchart" viewBox="0 0 520 260" role="img" aria-label="Bar chart of annual global solar additions rising from 17 gigawatts in 2010 to a record 664 gigawatts in 2025"></svg>
+          <div class="tt" id="solartt"></div>
+        </div>
+        <div class="bnote" style="font-size:11.5px;color:var(--ink-3);margin-top:8px">SolarPower Europe Global Market Outlook 2026 lineage; 2025 = 664 GW record, 57% of it in China.</div>
+      </div>
+      <div class="panel">
+        <h3>Share of new cars that are electric <span style="font-weight:400;color:var(--ink-3)">(% of global sales)</span></h3>
+        <div class="chartwrap" id="evwrap">
+          <svg id="evchart" viewBox="0 0 520 260" role="img" aria-label="Line chart of global EV sales share rising from about 1 percent in 2015 to over 25 percent in 2025"></svg>
+          <div class="tt" id="evtt"></div>
+        </div>
+        <div class="bnote" style="font-size:11.5px;color:var(--ink-3);margin-top:8px">IEA Global EV Outlook series (battery-electric + plug-in hybrid). In China, electric cars are already about half of new sales.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>SOLUTIONS, MAPPED TO SOURCES</h2>
+    <p class="subhead">The <a href="/carbon-atlas/" style="color:var(--ink-1)">Carbon Atlas</a> breaks all emissions into their sources. Every one of those slices now has technologies attacking it — at very different stages of maturity. This map pairs each major source with its solutions and an honest status: <span class="stat now">DEPLOYING NOW</span> means commercially winning today, <span class="stat scaling">SCALING</span> means proven and growing fast, <span class="stat emerging">EMERGING</span> means real but still small or pre-commercial.</p>
+    <div class="panel">
+      <div id="solmap"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>THE BUILDERS</h2>
+    <p class="subhead">Behind the curves is a new generation of institutions built specifically to speed them up — venture funds that only do climate, buyer coalitions that guarantee demand for technology that barely exists yet, and the first funds treating biodiversity itself as an investable asset. A sample of the players, by name:</p>
+    <div class="orgs">
+      <div class="org" style="border-top-color:var(--s1)">
+        <div class="t">Breakthrough Energy</div>
+        <div class="m">103 companies</div>
+        <div class="d">Bill Gates's platform for hard climate tech across five sectors — manufacturing (29 companies), electricity (26), agriculture (20), transport (17) and buildings (11) — run on a Discover → Develop → Deploy pipeline aimed at technologies that can scale to billions of people.</div>
+        <div class="f">breakthroughenergy.org</div>
+      </div>
+      <div class="org" style="border-top-color:var(--s2)">
+        <div class="t">Lowercarbon Capital</div>
+        <div class="m">$2B+ · 100+ cos</div>
+        <div class="d">Chris &amp; Crystal Sacca's climate-only venture firm: more than $2 billion under management across 100+ mostly hardware companies, pre-seed to pre-IPO — from electric aircraft to carbon-registry infrastructure — plus a dedicated $350M carbon removal fund.</div>
+        <div class="f">lowercarboncapital.com</div>
+      </div>
+      <div class="org" style="border-top-color:var(--s3)">
+        <div class="t">Frontier</div>
+        <div class="m">$1.8B by 2040</div>
+        <div class="d">An "advance market commitment": Stripe, Google, Shopify, Anthropic, Salesforce, JPMorgan and others pre-purchase permanent carbon removal before the industry exists at scale — copying the vaccine-funding model credited with saving ~700,000 lives.</div>
+        <div class="f">frontierclimate.com</div>
+      </div>
+      <div class="org" style="border-top-color:var(--s6)">
+        <div class="t">Superorganism</div>
+        <div class="m">1st biodiversity VC</div>
+        <div class="d">The first venture fund built entirely around biodiversity — a $25.9M debut fund (2025) backing startups in ecosystem restoration, wildlife monitoring, and nature-positive materials. Small, but a signal: extinction risk is becoming an investment thesis.</div>
+        <div class="f">superorganism.com</div>
+      </div>
+      <div class="org" style="border-top-color:var(--s5)">
+        <div class="t">EcoEnterprises Fund</div>
+        <div class="m">Fund IV · $100M</div>
+        <div class="d">Three decades of profitable investing in nature-based businesses across Latin America — regenerative agriculture, sustainable aquaculture, ecotourism — with a fourth fund raising $100M+ for climate- and biodiversity-positive companies.</div>
+        <div class="f">ecoenterprisesfund.com</div>
+      </div>
+      <div class="org" style="border-top-color:var(--s4)">
+        <div class="t">…and the wider wave</div>
+        <div class="m">$2.2T / yr</div>
+        <div class="d">These named players are the tip of a much larger movement: the entire clean-energy economy now attracts $2.2 trillion of investment per year, alternative proteins have drawn $19B+ since 2016, and renewables take 70% of all power-generation spending worldwide.</div>
+        <div class="f">IEA World Energy Investment 2026 · GFI</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>SIGNS THE CURVES ALREADY BEND</h2>
+    <p class="subhead">"Could this actually reverse the trends?" is a fair question — so here is the track record. None of these were supposed to happen this fast, and one of them (the ozone layer) is a completed proof that humanity can identify planetary damage, act together, and watch the damage heal.</p>
+    <div class="wins">
+      <div class="win">
+        <div class="t">China's emissions have stopped rising</div>
+        <div class="v">21 months flat/falling</div>
+        <div class="d">The world's largest emitter recorded its first non-Covid annual decline in 2025, with solar generation up 46% — a possible peak, five years ahead of its 2030 pledge (Carbon Brief).</div>
+      </div>
+      <div class="win">
+        <div class="t">Rich economies peaked long ago</div>
+        <div class="v">Dozens of countries</div>
+        <div class="d">The UK has cut emissions ~50% below 1990 while its economy grew — and in 2024 closed its last coal plant, ending 142 years of coal power. The EU and US are both well below their peaks.</div>
+      </div>
+      <div class="win">
+        <div class="t">The ozone layer is healing</div>
+        <div class="v">Recovery on track</div>
+        <div class="d">After the 1987 Montreal Protocol phased out CFCs, the ozone hole is now shrinking, with full Antarctic recovery projected around 2066 (UNEP). The template: global treaty → industry retooled → planet heals.</div>
+      </div>
+      <div class="win">
+        <div class="t">Emissions growth has collapsed</div>
+        <div class="v">~3% → ~1% / yr</div>
+        <div class="d">Global fossil CO₂ grew ~3%/yr in the 2000s; it now grows ~1%/yr even as the economy expands — the flattening that comes right before a peak (Global Carbon Project).</div>
+      </div>
+      <div class="win">
+        <div class="t">Deforestation fell sharply in 2025</div>
+        <div class="v">−36% in one year</div>
+        <div class="d">Tropical primary forest loss dropped from 2024's fire-driven record to 4.3 Mha — and long-run FAO deforestation rates have fallen by more than half since the 1990s.</div>
+      </div>
+      <div class="win">
+        <div class="t">Ocean protection is accelerating</div>
+        <div class="v">8.4% → 10% in 2 yrs</div>
+        <div class="d">Marine protected area jumped from 8.4% of the ocean in late 2024 to 10% by mid-2026, driven by new large reserves — the fastest expansion on record (Protected Planet).</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>THE NEXT 5&ndash;20 YEARS</h2>
+    <p class="subhead">A qualitative outlook — clearly labelled as scenario, not prediction — for what the technologies and institutions above could plausibly deliver, if the S-curves keep running and policy doesn't reverse. Grounded in IEA scenario work, announced projects, and the deployment math on this page.</p>
+    <div class="panel">
+      <div class="era">
+        <div class="when">NOW &rarr; 2030<small>momentum phase</small></div>
+        <ul>
+          <li><b>Global emissions peak.</b> With China plateauing and clean power taking essentially all electricity demand growth, the IEA's current-policy scenarios put the world's fossil fuel peak within this decade — the summit of the mountain the Carbon Atlas charts.</li>
+          <li><b>Solar + storage become the default power plant</b> almost everywhere; batteries below $100/kWh make EVs the cheapest car to own in most markets, pushing past 40% of global sales.</li>
+          <li><b>Carbon removal grows from thousands to millions of tonnes</b>, funded by Frontier-style advance purchases while costs walk down the same learning curve solar did.</li>
+          <li><b>Nature: the 30×30 sprint.</b> Protection must double on land and triple at sea by 2030 — ocean coverage is already accelerating, and deforestation keeps trending down toward the zero-by-2030 goal.</li>
+        </ul>
+      </div>
+      <div class="era">
+        <div class="when">2030 &rarr; 2036<small>takeover phase</small></div>
+        <ul>
+          <li><b>Clean majorities.</b> Renewables become the largest source of electricity globally (they already are in a growing list of countries); heat pumps outsell fossil furnaces across most rich economies.</li>
+          <li><b>Heavy industry breaks ground.</b> First commercial fleets of green steel (hydrogen-based), low-carbon cement, and zero-emission shipping fuels — the technologies Breakthrough Energy and Lowercarbon are seeding today reaching industrial scale.</li>
+          <li><b>Food tech matures.</b> Alternative proteins reach price parity in major categories; precision agriculture and feed additives cut methane per calorie, easing the largest pressure on forests and wildlife: land.</li>
+          <li><b>Emissions decline becomes the norm</b> — the world follows the path dozens of rich economies and (likely) China have already taken, and the annual number on the Carbon Atlas starts falling year over year.</li>
+        </ul>
+      </div>
+      <div class="era">
+        <div class="when">2036 &rarr; 2046<small>recovery phase</small></div>
+        <ul>
+          <li><b>The physics payoff.</b> IPCC science indicates warming roughly <em>stops</em> when CO₂ emissions reach net zero — it does not coast upward for centuries. Every tonne cut this decade brings that stabilization closer.</li>
+          <li><b>Carbon removal approaches climate-relevant scale</b> (hundreds of Mt to Gt per year) if demand commitments keep compounding — turning "net zero" from slogan into arithmetic, and eventually bending CO₂ concentration itself.</li>
+          <li><b>Nature stocks turn.</b> With direct pressure already decelerating, sustained protection and restoration could flip several of the Nature Atlas's worsening indicators to recovering — as whales, bison, and bald eagles already prove is possible when pressure lifts.</li>
+          <li><b>The scorecards change color.</b> The plausible end-state of these curves: a carbon scorecard measuring headroom regained instead of lost, and a nature scorecard where "improving" outnumbers "worsening."</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flags"><b>Read the optimism honestly:</b> S-curves are powerful but not automatic. Fossil-heavy grids, financing gaps in developing economies, land-use politics, and policy reversals can all slow this timeline — and today's warming trajectory (~2.5&ndash;3&nbsp;°C on current policies) still demands faster action than the current pace. The point of this page is not that success is guaranteed; it's that the tools now exist, they're getting cheaper every year, and the curves have already started to bend.</div>
+  </section>
+
+  <a class="companion panel" href="/carbon-atlas/">
+    <div class="t">&#9664; SEE WHAT THESE SOLUTIONS ARE UP AGAINST</div>
+    <p>The Carbon Atlas maps every emission source these technologies must replace; the Nature Atlas tracks the living systems they would relieve. Read all three together.</p>
+  </a>
+
+  <section>
+    <h2>GLOSSARY</h2>
+    <p class="subhead">The jargon on this page, in plain words.</p>
+    <div class="panel">
+      <dl class="gloss">
+        <div><dt>Learning curve (Wright's Law)</dt><dd>The observed rule that every doubling of a technology's cumulative production drops its cost by a fixed percentage (~20% for solar). It is why solar and batteries kept getting cheaper "faster than expected" — the forecasts assumed straight lines, reality compounded.</dd></div>
+        <div><dt>S-curve</dt><dd>The shape technology adoption follows: slow start, explosive middle once the new option is cheaper/better, then saturation. EVs and solar are in the explosive middle.</dd></div>
+        <div><dt>LCOE</dt><dd>"Levelized cost of electricity" — the all-in lifetime cost of building and running a power plant per unit of electricity, the standard way to compare power sources fairly.</dd></div>
+        <div><dt>GW / TW (gigawatt / terawatt)</dt><dd>Units of power capacity. One GW ≈ a large power station; a terawatt is 1,000 GW. The world's solar fleet passed 3 TW in 2026.</dd></div>
+        <div><dt>Carbon removal (CDR)</dt><dd>Technologies that pull CO₂ back out of the atmosphere — direct air capture machines, enhanced rock weathering, buried bio-oil, ocean methods. Distinct from capturing emissions at a smokestack.</dd></div>
+        <div><dt>Advance market commitment (AMC)</dt><dd>Buyers promise today to purchase a product that barely exists, giving inventors a guaranteed market worth building for. Proved out with vaccines; Frontier applies it to carbon removal.</dd></div>
+        <div><dt>Green steel / hydrogen</dt><dd>Steel made using hydrogen (produced with clean electricity) instead of coal — eliminating one of industry's largest emission sources. First commercial plants are under construction.</dd></div>
+        <div><dt>Heat pump</dt><dd>An electric device that moves heat instead of generating it, heating (and cooling) buildings 3&ndash;4× more efficiently than a gas furnace.</dd></div>
+        <div><dt>Alternative proteins</dt><dd>Plant-based, fermentation-made, or cultivated meat/dairy substitutes. They matter because livestock is the single largest driver of deforestation and agricultural emissions.</dd></div>
+        <div><dt>Net zero</dt><dd>The point where any remaining emissions are balanced by removals — after which, per IPCC, global warming approximately stabilizes rather than continuing.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    <h2>ABOUT THIS PROJECT</h2>
+    <div class="panel">
+      <p style="max-width:88ch;font-size:14px;color:var(--ink-2);margin:0">I'm <b style="color:var(--ink-1)">Kamber Lucas</b> — an MBA student at Colorado State University focused on carbon management and sustainability, previously in conservation with the Alaska Dept. of Fish &amp; Game and a Returned Peace Corps Volunteer. This page is the third panel of the triptych: the <a href="/carbon-atlas/" style="color:inherit">Carbon Atlas</a> and <a href="/nature-atlas/" style="color:inherit">Nature Atlas</a> chart the problem; this one charts the response. Every figure traces to a public source below; projections are labelled as such. Corrections and suggestions welcome.</p>
+    </div>
+  </section>
+
+  <footer class="src">
+    <h3>Sources &amp; method</h3>
+    <p>Investment: <a href="https://www.iea.org/reports/world-energy-investment-2026">IEA World Energy Investment 2026</a> ($2.2T clean vs $1.2T fossil; renewables 70% of power-generation spending; ~80% decade decline in EV/battery/solar prices). Costs: <a href="https://www.lazard.com/news-announcements/lazard-releases-2025-levelized-cost-of-energyplus-report-pr/">Lazard LCOE+ 2025</a> (solar $38&ndash;78/MWh; cheapest new-build 10 years running); IRENA renewable cost series (solar LCOE ~&minus;90%, onshore wind ~&minus;68% since 2010); <a href="https://www.iea.org/reports/global-ev-outlook-2026/electric-vehicle-batteries">BloombergNEF via IEA</a> (pack prices $108/kWh 2025, &minus;8% y/y). Deployment: <a href="https://www.solarpowereurope.org/press-releases/new-report-global-solar-market-hits-new-record-of-664-gw-installation-in-2025-as-global-solar-fleet-passes-3-tw">SolarPower Europe</a> (664 GW added 2025; 3 TW fleet); <a href="https://www.pv-magazine.com/2026/04/02/global-solar-additions-reached-record-511-gw-in-2025-says-irena/">IRENA</a> (692 GW renewables added; 49% of installed capacity); <a href="https://www.iea.org/reports/global-ev-outlook-2026/executive-summary">IEA Global EV Outlook 2026</a> (20.7M EVs, &gt;25% share).</p>
+    <p>Trend reversals: <a href="https://www.carbonbrief.org/analysis-chinas-co2-emissions-have-now-been-flat-or-falling-for-21-months">Carbon Brief — China's CO₂ flat or falling 21 months</a> and <a href="https://www.carbonbrief.org/analysis-clean-energy-just-put-chinas-co2-emissions-into-reverse-for-first-time">first clean-energy-driven decline</a>; UK: DESNZ/National Grid (coal exit Sept 2024); ozone: UNEP/WMO Scientific Assessment 2022; emissions growth rates: Global Carbon Project; deforestation and ocean protection figures as sourced on the <a href="/nature-atlas/">Nature Atlas</a>. Builders: <a href="https://www.breakthroughenergy.org/">Breakthrough Energy</a> (103 companies by sector); <a href="https://techcrunch.com/2021/08/12/chris-saccas-lowercarbon-capital-has-raised-800-million-to-keep-unfcking-the-planet">Lowercarbon Capital</a> raises via <a href="https://www.cnbc.com/2022/04/14/chris-saccas-investment-firm-raises-350-million-for-carbon-removal.html">CNBC</a> and <a href="https://impactalpha.com/chris-saccas-lowercarbon-capital-raises-550-million-for-two-climate-tech-funds/">ImpactAlpha</a>; <a href="https://frontierclimate.com/">Frontier</a> ($1.8B target, buyer list, AMC model); Superorganism debut fund and <a href="https://gfi.org/investment/">GFI</a> alt-protein investment totals.</p>
+    <p>Method notes: cost-curve chart uses each source's published series with interpolation between release years — endpoints are exact, intermediate shape approximate; both real-world upticks (2022 supply shock) are drawn, not smoothed. The 5&ndash;20 year outlook is a qualitative scenario grounded in IEA scenario work and IPCC AR6 (net-zero → warming stabilization), not a forecast. Named organisations are examples, not endorsements; figures are their latest public statements as of August 2026.</p>
+    <p>© Kamber Lucas · <a href="/">kamberlu.github.io</a> · <a href="/carbon-atlas/">Carbon Atlas</a> · <a href="/nature-atlas/">Nature Atlas</a></p>
+  </footer>
+</div>
+
+<script>
+/* ---------- pixel banner: dawn over wind turbines and a solar field ---------- */
+(function () {
+  "use strict";
+  var canvas = document.getElementById("banner");
+  var ctx = canvas.getContext("2d");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var H = 44, W = 192;
+  // dawn: brightest at the horizon
+  var SKY = ["#241b4d", "#4a2a7e", "#8a3a86", "#d85a72", "#ff9a4a", "#ffd07a"].map(hex);
+  var BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+  function css(c){return "rgb("+c[0]+","+c[1]+","+c[2]+")";}
+  function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;};}
+  var ridge = [], turbines = [], panels = [];
+  function rebuild() {
+    var aspect = Math.max(2, (window.innerWidth || 1200) / 150);
+    W = Math.max(120, Math.min(420, Math.round(H * aspect)));
+    canvas.width = W; canvas.height = H;
+    var rnd = mulberry32(2030);
+    ridge = [];
+    var h = 10;
+    for (var x = 0; x < W; x++) {
+      h += (rnd() - 0.5) * 1.6;
+      if (h < 6) h = 6 + rnd();
+      if (h > 14) h = 14 - rnd();
+      ridge.push(Math.round(h));
+    }
+    turbines = [];
+    var rt = mulberry32(88);
+    for (var i = 0; i < 5; i++) {
+      var tx = Math.floor(W * (0.1 + 0.2 * i) + rt() * 8);
+      turbines.push({ x: tx, h: 13 + Math.floor(rt() * 4), ph: rt() * Math.PI * 2 });
+    }
+    panels = [];
+    var rp = mulberry32(404);
+    for (var r = 0; r < 3; r++) {
+      for (var px = 4 + r * 3; px < W * 0.34; px += 7) {
+        panels.push({ x: px, y: r, glint: rp() });
+      }
+    }
+  }
+  function blade(cx, cy, ang, len) {
+    for (var s = 1; s <= len; s++) {
+      ctx.fillRect(Math.round(cx + Math.cos(ang) * s), Math.round(cy + Math.sin(ang) * s), 1, 1);
+    }
+  }
+  function draw(time) {
+    var horizon = H - 12;
+    for (var y = 0; y < horizon; y++) {
+      var v = y / (horizon - 1) * (SKY.length - 1);
+      var i0 = Math.floor(v), f = v - i0;
+      for (var x = 0; x < W; x++) {
+        var th = (BAYER[y & 3][x & 3] + 0.5) / 16;
+        ctx.fillStyle = css(SKY[f > th ? Math.min(i0 + 1, SKY.length - 1) : i0]);
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // rising sun — half disc on the horizon
+    var sr = 10, sx = Math.round(W * 0.62);
+    ctx.fillStyle = "#ffe27a";
+    for (var dy = -sr; dy <= 0; dy++) {
+      var py = horizon + dy;
+      if (dy > -sr + 2 && py % 3 === 0) continue;
+      var hw = Math.floor(Math.sqrt(sr * sr - dy * dy));
+      ctx.fillRect(sx - hw, py, hw * 2 + 1, 1);
+    }
+    // ground
+    ctx.fillStyle = "#1a1236";
+    ctx.fillRect(0, horizon, W, H - horizon);
+    // rolling ridge
+    ctx.fillStyle = "#241945";
+    for (var rx = 0; rx < W; rx++) {
+      ctx.fillRect(rx, horizon - ridge[rx] + 8, 1, ridge[rx]);
+    }
+    // solar field (bottom-left) with occasional glints
+    panels.forEach(function (p, i) {
+      var py = horizon + 2 + p.y * 3;
+      ctx.fillStyle = "#2a4a8e";
+      ctx.fillRect(p.x, py, 4, 2);
+      ctx.fillStyle = "#4a6ab8";
+      ctx.fillRect(p.x, py, 4, 1);
+      var gl = reduced ? p.glint > 0.8 : (Math.floor(time / 900 + i) % 11) === 0;
+      if (gl) { ctx.fillStyle = "#ffd07a"; ctx.fillRect(p.x + 1, py, 1, 1); }
+    });
+    // wind turbines with rotating blades
+    turbines.forEach(function (t, i) {
+      var baseY = horizon + 3;
+      var hubY = baseY - t.h;
+      ctx.fillStyle = "#efe8f8";
+      ctx.fillRect(t.x, hubY, 1, t.h);
+      var ang = reduced ? t.ph : time / 1400 + t.ph;
+      ctx.fillStyle = "#f8f4ff";
+      for (var b = 0; b < 3; b++) {
+        blade(t.x, hubY, ang + b * (Math.PI * 2 / 3), 6);
+      }
+      ctx.fillRect(t.x - 1, hubY - 1, 3, 3);
+    });
+  }
+  var last = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 1000 / 12) return;
+    last = now;
+    draw(now);
+  }
+  window.addEventListener("resize", function () { rebuild(); draw(0); });
+  rebuild();
+  draw(0);
+  if (!reduced) requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* ---------- cost collapse chart (indexed, 2010 = 100) ---------- */
+  var YEARS = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  var COST = [
+    { name: "Solar electricity (LCOE)", v: "--s4", end: "−90%",
+      idx: [100,81,63,49,40,29,25,21,18,15,13,11,11,10,10,10] },
+    { name: "Battery packs ($/kWh)", v: "--s3", end: "−92%",
+      idx: [100,85,68,56,44,30,25,16,13,12,11,10,12,11,9,8] },
+    { name: "Onshore wind (LCOE)", v: "--s1", end: "−68%",
+      idx: [100,95,89,84,78,71,66,60,54,47,41,36,35,33,32,32] }
+  ];
+  (function () {
+    var svg = document.getElementById("costchart");
+    var tt = document.getElementById("costtt");
+    var W = 1080, H = 380, ML = 52, MR = 130, MT = 18, MB = 34;
+    var iw = W - ML - MR, ih = H - MT - MB;
+    function xOf(yi) { return ML + yi / (YEARS.length - 1) * iw; }
+    function yOf(v) { return MT + (100 - v) / 100 * ih; }
+    [0, 25, 50, 75, 100].forEach(function (g) {
+      el("line", { x1: ML, x2: ML + iw, y1: yOf(g), y2: yOf(g), stroke: g === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+      var t = el("text", { x: ML - 8, y: yOf(g) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = g;
+    });
+    var unit = el("text", { x: ML - 40, y: MT + 8, "font-size": 11, fill: "var(--ink-3)" }, svg);
+    unit.textContent = "2010=100";
+    [2010, 2015, 2020, 2025].forEach(function (yr) {
+      var t = el("text", { x: xOf(YEARS.indexOf(yr)), y: H - 10, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = yr;
+    });
+    COST.forEach(function (s) {
+      var d = s.idx.map(function (v, i) { return (i ? "L" : "M") + xOf(i).toFixed(1) + " " + yOf(v).toFixed(1); }).join("");
+      var p = el("path", { d: d, fill: "none", "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+      p.style.stroke = "var(" + s.v + ")";
+      var last = s.idx[s.idx.length - 1];
+      var lb = el("text", { x: ML + iw + 10, y: yOf(last) + 4, "font-size": 12.5, "font-weight": 600, fill: "var(--ink-1)" }, svg);
+      lb.textContent = s.end + " " + (s.name.indexOf("Battery") === 0 ? "batteries" : s.name.indexOf("Solar") === 0 ? "solar" : "wind");
+      var dot = el("circle", { cx: xOf(YEARS.length - 1), cy: yOf(last), r: 4 }, svg);
+      dot.style.fill = "var(" + s.v + ")";
+    });
+    var cross = el("line", { y1: MT, y2: MT + ih, stroke: "var(--axis)", "stroke-width": 1, opacity: 0 }, svg);
+    var cap = el("rect", { x: ML, y: MT, width: iw, height: ih, fill: "transparent" }, svg);
+    cap.addEventListener("mousemove", function (ev) {
+      var pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      var loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var yi = Math.round((loc.x - ML) / iw * (YEARS.length - 1));
+      yi = Math.max(0, Math.min(YEARS.length - 1, yi));
+      cross.setAttribute("x1", xOf(yi)); cross.setAttribute("x2", xOf(yi));
+      cross.setAttribute("opacity", 1);
+      var html = "<h4>" + YEARS[yi] + " — cost vs 2010</h4>";
+      COST.forEach(function (s) {
+        html += "<div class='r'><span class='l'><span class='chip' style='background:var(" + s.v + ")'></span>" +
+          s.name.split(" (")[0] + "</span><b>" + s.idx[yi] + "</b></div>";
+      });
+      tt.innerHTML = html;
+      tt.style.display = "block";
+      var wb = document.getElementById("costwrap").getBoundingClientRect();
+      var px = (xOf(yi) / W) * wb.width;
+      var lx = px + 16; if (lx + 220 > wb.width) lx = px - 236;
+      tt.style.left = lx + "px"; tt.style.top = "20px";
+    });
+    cap.addEventListener("mouseleave", function () { tt.style.display = "none"; cross.setAttribute("opacity", 0); });
+    var lg = document.getElementById("costlegend");
+    COST.forEach(function (s) {
+      var r = document.createElement("div");
+      r.className = "r";
+      r.innerHTML = "<span class='chip' style='background:var(" + s.v + ")'></span>" + s.name;
+      lg.appendChild(r);
+    });
+  })();
+
+  /* ---------- solar additions bars ---------- */
+  (function () {
+    var data = [[2010,17],[2012,30],[2014,40],[2016,76],[2018,103],[2020,139],[2022,239],[2023,447],[2024,597],[2025,664]];
+    var svg = document.getElementById("solarchart");
+    var tt = document.getElementById("solartt");
+    var W = 520, H = 260, ML = 44, MT = 14, MB = 30;
+    var iw = W - ML - 12, ih = H - MT - MB;
+    function yOf(v) { return MT + (700 - v) / 700 * ih; }
+    [0, 200, 400, 600].forEach(function (g) {
+      el("line", { x1: ML, x2: ML + iw, y1: yOf(g), y2: yOf(g), stroke: g === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+      var t = el("text", { x: ML - 6, y: yOf(g) + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = g;
+    });
+    var bw = iw / data.length - 8;
+    data.forEach(function (d, i) {
+      var x = ML + 4 + i * (iw / data.length);
+      var r = el("rect", { x: x, y: yOf(d[1]), width: bw, height: yOf(0) - yOf(d[1]) }, svg);
+      r.style.fill = i === data.length - 1 ? "var(--gold)" : "var(--s4)";
+      r.addEventListener("mousemove", function (ev) {
+        tt.innerHTML = "<h4>" + d[0] + "</h4><div class='r'><span class='l'>Solar added</span><b>" + d[1] + " GW</b></div>";
+        tt.style.display = "block";
+        var wb = document.getElementById("solarwrap").getBoundingClientRect();
+        tt.style.left = Math.min(ev.clientX - wb.left + 12, wb.width - 200) + "px";
+        tt.style.top = "16px";
+      });
+      r.addEventListener("mouseleave", function () { tt.style.display = "none"; });
+      var t = el("text", { x: x + bw / 2, y: H - 12, "text-anchor": "middle", "font-size": 9.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = "'" + String(d[0]).slice(2);
+    });
+    var lb = el("text", { x: ML + iw - 4, y: yOf(664) - 8, "text-anchor": "end", "font-size": 11.5, "font-weight": 600, fill: "var(--gold)", "font-family": "IBM Plex Mono, monospace" }, svg);
+    lb.textContent = "664 GW record";
+  })();
+
+  /* ---------- EV share line ---------- */
+  (function () {
+    var data = [[2015,1],[2018,2.3],[2020,4.2],[2021,8.7],[2022,14],[2023,18],[2024,20],[2025,25.5]];
+    var svg = document.getElementById("evchart");
+    var tt = document.getElementById("evtt");
+    var W = 520, H = 260, ML = 44, MT = 14, MB = 30;
+    var iw = W - ML - 16, ih = H - MT - MB;
+    function xOf(yr) { return ML + (yr - 2015) / 10 * iw; }
+    function yOf(v) { return MT + (30 - v) / 30 * ih; }
+    [0, 10, 20, 30].forEach(function (g) {
+      el("line", { x1: ML, x2: ML + iw, y1: yOf(g), y2: yOf(g), stroke: g === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, svg);
+      var t = el("text", { x: ML - 6, y: yOf(g) + 4, "text-anchor": "end", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = g + "%";
+    });
+    [2015, 2020, 2025].forEach(function (yr) {
+      var t = el("text", { x: xOf(yr), y: H - 12, "text-anchor": "middle", "font-size": 10.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+      t.textContent = yr;
+    });
+    var d = data.map(function (p, i) { return (i ? "L" : "M") + xOf(p[0]).toFixed(1) + " " + yOf(p[1]).toFixed(1); }).join("");
+    el("path", { d: d, fill: "none", stroke: "var(--s3)", "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+    data.forEach(function (p) {
+      var c = el("circle", { cx: xOf(p[0]), cy: yOf(p[1]), r: 4, fill: "var(--s3)", stroke: "var(--surface-1)", "stroke-width": 2 }, svg);
+      c.addEventListener("mousemove", function (ev) {
+        tt.innerHTML = "<h4>" + p[0] + "</h4><div class='r'><span class='l'>EV share of new cars</span><b>" + p[1] + "%</b></div>";
+        tt.style.display = "block";
+        var wb = document.getElementById("evwrap").getBoundingClientRect();
+        tt.style.left = Math.min(ev.clientX - wb.left + 12, wb.width - 210) + "px";
+        tt.style.top = "16px";
+      });
+      c.addEventListener("mouseleave", function () { tt.style.display = "none"; });
+    });
+    var lb = el("text", { x: xOf(2025) - 8, y: yOf(25.5) - 12, "text-anchor": "end", "font-size": 11.5, "font-weight": 600, fill: "var(--s3)", "font-family": "IBM Plex Mono, monospace" }, svg);
+    lb.textContent = "1 in 4";
+  })();
+
+  /* ---------- solutions-to-sources map ---------- */
+  var MAP = [
+    { src: "Electricity & heat (~31% of global)", share: "The largest single wedge of the energy sector's 73%", pct: 31, hue: "--sec-energy",
+      chips: ["Solar + storage", "Wind", "Grid expansion", "Nuclear & geothermal"],
+      stat: "now", statTxt: "DEPLOYING NOW",
+      d: "The furthest along: renewables are 49% of world capacity, take 70% of power-plant investment, and are the cheapest new electricity in most of the world." },
+    { src: "Transport (16.2% of global)", share: "Road 11.9% · aviation 1.9% · shipping 1.7%", pct: 16.2, hue: "--sec-energy",
+      chips: ["EVs & e-trucks", "Charging networks", "Sustainable aviation fuel", "Green shipping fuels"],
+      stat: "now", statTxt: "CARS NOW · SHIPS/PLANES EMERGING",
+      d: "1 in 4 new cars is already electric. Aviation and shipping fuels are a decade behind — the frontier Breakthrough and Lowercarbon portfolios target." },
+    { src: "Industry (24.2% energy + 5.2% process)", share: "Iron & steel 7.2% · cement 3% · chemicals 5.8%", pct: 29.4, hue: "--sec-ip",
+      chips: ["Green steel (H₂)", "Clean cement", "Industrial heat electrification", "Green hydrogen"],
+      stat: "emerging", statTxt: "PILOTS → FIRST PLANTS",
+      d: "The hardest wedge. First commercial hydrogen-steel and low-carbon cement plants are being built now; scale arrives in the 2030s." },
+    { src: "Buildings (17.5% of global)", share: "Residential 10.9% · commercial 6.6%", pct: 17.5, hue: "--sec-energy",
+      chips: ["Heat pumps", "Efficiency retrofits", "Induction & electrification"],
+      stat: "scaling", statTxt: "SCALING",
+      d: "Heat pumps already outsell gas furnaces in the US and much of Europe — a quiet S-curve running 3–4× more efficient than what it replaces." },
+    { src: "Food, agriculture & land (18.4%)", share: "Livestock 5.8% · soils 4.1% · deforestation 2.2%", pct: 18.4, hue: "--sec-afolu",
+      chips: ["Alternative proteins", "Methane-cutting feed", "Precision agriculture", "Restoration & reforestation"],
+      stat: "emerging", statTxt: "EMERGING + POLICY-LED",
+      d: "The wedge that decides the Nature Atlas too: less land for food is the single biggest lever for forests and wildlife. $19B+ invested in alt proteins since 2016." },
+    { src: "Waste (3.2% of global)", share: "Landfills 1.9% · wastewater 1.3%", pct: 3.2, hue: "--sec-waste",
+      chips: ["Landfill methane capture", "Circular materials"],
+      stat: "scaling", statTxt: "READY · UNDERDEPLOYED",
+      d: "Proven tech, mostly an economics-and-policy problem — methane rules and satellite leak detection are closing the gap." },
+    { src: "Carbon removal (new, negative wedge)", share: "Target: billions of tonnes by the 2040s", pct: 8, hue: "--sec-afolu",
+      chips: ["Direct air capture", "Enhanced rock weathering", "Bio-oil burial", "Ocean CDR"],
+      stat: "emerging", statTxt: "EARLY · GROWING FAST",
+      d: "Doesn't cut a source — it subtracts from the total. Frontier's $1.8B advance commitment is deliberately re-running solar's playbook: guaranteed demand → learning curve → scale." }
+  ];
+  var mEl = document.getElementById("solmap");
+  MAP.forEach(function (m) {
+    var row = document.createElement("div");
+    row.className = "maprow";
+    var chips = m.chips.map(function (c) { return "<span class='schip'>" + c + "</span>"; }).join("");
+    row.innerHTML =
+      "<div class='src'><div class='nm'><span class='chip' style='background:var(" + m.hue + ")'></span>" + m.src + "</div>" +
+      "<div class='sh'>" + m.share + "</div>" +
+      "<div class='bar'><i style='width:" + Math.min(100, m.pct / 31 * 100) + "%;background:var(" + m.hue + ")'></i></div></div>" +
+      "<div><span class='stat " + m.stat + "'>" + m.statTxt + "</span></div>" +
+      "<div class='sol'><div class='chips'>" + chips + "</div>" + m.d + "</div>";
+    mEl.appendChild(row);
+  });
+})();
+</script>
+</body>
+</html>
