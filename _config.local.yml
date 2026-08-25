@@ -1,0 +1,5 @@
+# Local-only override: disables the jekyll-github-metadata API calls
+# (site.github.*) so the site builds without network access to api.github.com.
+# GitHub Pages ignores this file; it is only used when passed explicitly:
+#   bundle exec jekyll serve --config _config.yml,_config.dev.yml,_config.local.yml
+github: false
