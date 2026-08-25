@@ -253,44 +253,36 @@
     </div>
 
     <div class="panel ledger">
-      <p class="ld" style="margin:0 0 14px;max-width:95ch"><b style="color:var(--ink-1)">The planetary scoreboard.</b> Before diving into emissions, here is the summary reading across both atlases: how healthy the planet's carbon balance and living systems are right now (<b>state</b>), which way things are moving (<b>trend</b>), and whether the pace of damage is speeding up or slowing down (<b>acceleration</b>).</p>
+      <p class="ld" style="margin:0 0 14px;max-width:95ch"><b style="color:var(--ink-1)">The carbon scorecard.</b> Before diving into the sources, here is the summary reading for this atlas's subject — the planet's carbon balance: how much headroom is left right now (<b>state</b>), which way it is moving (<b>trend</b>), and whether the damage is speeding up or slowing down (<b>acceleration</b>). The living world gets its own scorecard on the <a href="/nature-atlas/" style="color:inherit">Nature Atlas</a>.</p>
       <div class="lgrid">
         <div class="lcell">
-          <div class="k">Planetary state · carbon + nature</div>
-          <div class="lv">37<small> /100</small></div>
-          <div class="lbar"><i></i></div>
-          <div class="ld">Equal-weight roll-up of 11 stock indicators across both atlases (100 = healthy reference). Nature 56 · Carbon 18 · leave-one-out range 33–40.</div>
+          <div class="k">Carbon state · atmosphere &amp; budget</div>
+          <div class="lv">18<small> /100</small></div>
+          <div class="lbar"><i style="width:18%"></i></div>
+          <div class="ld">Equal-weight roll-up of this atlas's 3 stock indicators — atmospheric CO₂ headroom, the remaining 1.5 °C budget, and warming headroom (100 = healthy reference). Leave-one-out range 11–24.</div>
         </div>
         <div class="lcell">
           <div class="k">Net trend · direction of travel</div>
-          <div class="lv" style="color:var(--critical);text-shadow:0 0 10px rgba(255,107,122,.35)">▼ −1.0</div>
-          <div class="ld">Worsening — mean of ordinal classes from −2 (rapidly worsening) to +2 (improving). Nature −0.6, Carbon −1.3. Of 11 trend inputs: 9 deteriorating · 1 flat · 1 improving.</div>
+          <div class="lv" style="color:var(--critical);text-shadow:0 0 10px rgba(255,107,122,.35)">▼ −1.3</div>
+          <div class="ld">Worsening — mean of ordinal classes from −2 (rapidly worsening) to +2 (improving). Of 4 trend inputs: 3 worsening · 1 rapidly worsening (the shrinking 1.5 °C budget). None flat or improving.</div>
         </div>
         <div class="lcell">
           <div class="k">Acceleration · is it speeding up?</div>
-          <div class="ld" style="margin:6px 0 4px"><span class="lchip up">Direct human pressure — decelerating</span><span class="lchip dn">Climate-driven pressure — accelerating</span></div>
-          <div class="ld">Deforestation, overfishing growth and emissions growth are all slowing; fire, bleaching and heat damage are speeding up. Net: the world is <b>losing ground more slowly</b> — no global stock is yet recovering.</div>
+          <div class="ld" style="margin:6px 0 4px"><span class="lchip up">Emissions growth — decelerating</span><span class="lchip dn">CO₂ still accumulating — +2.5 ppm/yr</span></div>
+          <div class="ld">Growth in fossil emissions has slowed markedly — +1.1%/yr now versus ~3%/yr in the 2000s — but emissions have not yet peaked, so the atmosphere keeps filling and the budget keeps shrinking, <b>just slightly more slowly</b>.</div>
         </div>
       </div>
       <details>
         <summary>Method &amp; components</summary>
-        <div class="ld" style="margin-top:8px;max-width:100ch"><b>State</b> scores stocks only, each 0–100 against the stated reference below, equal-weighted within each domain, then domains averaged — no defensible unequal weighting exists, so weights are transparent instead. <b>Trend</b> classifies each input's current direction on an ordinal scale (−2 rapidly worsening · −1 worsening · 0 flat · +1 stabilizing · +2 improving), which avoids unit-choice artifacts; flows (emission and loss rates) inform trend, not state. <b>Acceleration</b> is reported qualitatively by pressure type. The level is sensitive to reference choices (especially 450 ppm and the ~500 Gt budget); the trend column is robust to them. Vintages span 2018–2026. This is a summary lens over the sourced indicators of both atlases — not a measurement.</div>
+        <div class="ld" style="margin-top:8px;max-width:100ch"><b>State</b> scores stocks only, each 0–100 against the stated reference below, equal-weighted — no defensible unequal weighting exists, so the weights are transparent instead. <b>Trend</b> classifies each input's current direction on an ordinal scale (−2 rapidly worsening · −1 worsening · 0 flat · +1 stabilizing · +2 improving), which avoids unit-choice artifacts; flows (the emission rate) inform trend, not state. <b>Acceleration</b> is reported qualitatively. The level is sensitive to reference choices (especially 450 ppm and the ~500 Gt budget); the trend column is robust to them. This is a summary lens over this atlas's sourced indicators — not a measurement.</div>
         <div class="mtable"><table>
           <tr><th>Indicator</th><th>State</th><th>Reference (=100)</th><th>Trend</th><th>2nd derivative</th></tr>
-          <tr><td>Wildlife populations (LPI)</td><td class="num">27</td><td>1970 abundance</td><td class="w">▼ worsening</td><td>no bend visible</td></tr>
-          <tr><td>Forest extent</td><td class="num">89</td><td>1990 area</td><td class="w">▼ worsening</td><td class="g">decelerating</td></tr>
-          <tr><td>Wetland extent</td><td class="num">78</td><td>1970 area</td><td class="w">▼ worsening</td><td>steady (−0.5%/yr)</td></tr>
-          <tr><td>Coral cover</td><td class="num">50</td><td>1950s cover</td><td class="w">▼ worsening</td><td class="w">accelerating</td></tr>
-          <tr><td>Land unaltered by humans</td><td class="num">25</td><td>Pre-industrial</td><td class="w">▼ worsening</td><td>slowing in forests, not grasslands</td></tr>
-          <tr><td>Species not threatened</td><td class="num">72</td><td>All assessed species</td><td class="w">▼ worsening</td><td>steady</td></tr>
-          <tr><td>Fish stocks sustainable</td><td class="num">62</td><td>All assessed stocks</td><td class="f">■ flat</td><td class="g">plateaued</td></tr>
-          <tr><td>Protected area (30×30)</td><td class="num">46</td><td>30% land &amp; ocean target</td><td class="g">▲ improving</td><td class="g">accelerating (ocean)</td></tr>
           <tr><td>Atmospheric CO₂ headroom</td><td class="num">14</td><td>278 ppm; 0 at 450 ppm</td><td class="w">▼ worsening</td><td>steady rise (+2.5 ppm/yr)</td></tr>
           <tr><td>1.5 °C carbon budget left</td><td class="num">34</td><td>~500 Gt (from 2020)</td><td class="w">▼▼ rapidly worsening</td><td>~4 years at current rate</td></tr>
           <tr><td>Warming headroom</td><td class="num">7</td><td>1.5 °C limit (now ~1.4 °C)</td><td class="w">▼ worsening</td><td>steady</td></tr>
           <tr><td>Fossil emissions (flow → trend only)</td><td class="num">—</td><td>—</td><td class="w">▼ rising +1.1%/yr</td><td class="g">growth decelerating (was ~3%/yr in 2000s)</td></tr>
         </table></div>
-        <div class="ld" style="margin-top:8px">Nature-side components live on the companion <a href="/nature-atlas/" style="color:inherit">Nature Atlas</a>.</div>
+        <div class="ld" style="margin-top:8px">The living world's scorecard — wildlife, forests, oceans and protection — lives on the companion <a href="/nature-atlas/" style="color:inherit">Nature Atlas</a>.</div>
       </details>
     </div>
     <div class="tiles">
