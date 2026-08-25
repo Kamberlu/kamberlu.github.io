@@ -202,7 +202,7 @@
 
 <div class="wrap">
   <header class="site">
-    <div class="eyebrow">Follow the money · compiled from IMF · UNEP · IEA · SIPRI · WPP</div>
+    <div class="eyebrow">Follow the money · compiled from IMF · UNEP · IEA · WPP</div>
     <p class="byline" style="margin-top:14px">Compiled by <b>Kamber Lucas</b> · Data current as of August 2026 · Continue to: <a href="/carbon-atlas/">Carbon Atlas</a> · <a href="/nature-atlas/">Nature Atlas</a> · <a href="/solutions/">Solutions</a></p>
     <p class="lede">The world spends roughly $115 trillion a year. Where that money flows decides what gets built, what gets burned, and what survives. This page follows the biggest flows — the ones financing damage by default, and the ones starting to reverse it.</p>
 
@@ -240,7 +240,7 @@
   <section>
     <h2>THE WORLD'S LEDGER</h2>
     <p class="subhead">The planet-shaping money flows, side by side, in trillions of dollars per year. Three kinds of line-items: flows financing damage, flows that are simply enormous (for scale), and flows consciously financing the fix.</p>
-    <div class="howto"><span class="tag">HOW TO READ</span>Each bar is an annual flow in trillions of US dollars — hover any bar for detail. One caution: these come from different accounting systems (IMF, UNEP, SIPRI, IEA) and <b>overlap</b> — fossil subsidies and nature-negative flows partly count the same money — so read them as comparable magnitudes, never add them up.</div>
+    <div class="howto"><span class="tag">HOW TO READ</span>Each bar is an annual flow in trillions of US dollars — hover any bar for detail. One caution: these come from different accounting systems (IMF, UNEP, IEA) and <b>overlap</b> — fossil subsidies and nature-negative flows partly count the same money — so read them as comparable magnitudes, never add them up.</div>
     <div class="panel">
       <div class="legend">
         <div class="r"><span class="chip" style="background:var(--s2)"></span>Financing damage</div>
@@ -336,7 +336,7 @@
 
   <footer class="src">
     <h3>Sources &amp; method</h3>
-    <p>Fossil subsidies: <a href="https://www.elibrary.imf.org/view/journals/001/2025/270/article-A001-en.xml">IMF Fossil Fuel Subsidies Data: 2025 Update</a> ($7.4T total in 2024 = 6.4% of GDP; $725B explicit, $6.7T implicit, three-quarters of it unpriced air pollution and climate damage). Nature flows: <a href="https://www.unep.org/resources/state-finance-nature-2026">UNEP State of Finance for Nature</a> ($7.3T nature-negative flows; ~$200B to nature-based solutions; ~$1.7T of the negative flows from public sources; NbS need ≈ $542B/yr by 2030). Clean energy: <a href="https://www.iea.org/reports/world-energy-investment-2026">IEA World Energy Investment 2026</a> ($2.2T clean vs $1.2T fossil); need: <a href="https://www.iea.org/reports/net-zero-roadmap-a-global-pathway-to-keep-the-15-c-goal-in-reach/executive-summary">IEA Net Zero Roadmap</a> ($4.5T/yr by 2030). Military: <a href="https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025">SIPRI</a> ($2.89T in 2025). Advertising: <a href="https://www.marketingbrew.com/stories/2025/12/09/total-global-ad-revenue-grew-nearly-9-in-2025-wpp-media">WPP Media</a> (~$1.1T in 2025). World GDP: IMF World Economic Outlook (~$115T, 2025).</p>
+    <p>Fossil subsidies: <a href="https://www.elibrary.imf.org/view/journals/001/2025/270/article-A001-en.xml">IMF Fossil Fuel Subsidies Data: 2025 Update</a> ($7.4T total in 2024 = 6.4% of GDP; $725B explicit, $6.7T implicit, three-quarters of it unpriced air pollution and climate damage). Nature flows: <a href="https://www.unep.org/resources/state-finance-nature-2026">UNEP State of Finance for Nature</a> ($7.3T nature-negative flows; ~$200B to nature-based solutions; ~$1.7T of the negative flows from public sources; NbS need ≈ $542B/yr by 2030). Clean energy: <a href="https://www.iea.org/reports/world-energy-investment-2026">IEA World Energy Investment 2026</a> ($2.2T clean vs $1.2T fossil); need: <a href="https://www.iea.org/reports/net-zero-roadmap-a-global-pathway-to-keep-the-15-c-goal-in-reach/executive-summary">IEA Net Zero Roadmap</a> ($4.5T/yr by 2030). Advertising: <a href="https://www.marketingbrew.com/stories/2025/12/09/total-global-ad-revenue-grew-nearly-9-in-2025-wpp-media">WPP Media</a> (~$1.1T in 2025). World GDP: IMF World Economic Outlook (~$115T, 2025).</p>
     <p>Method notes: flows come from different accounting frameworks and partially overlap (the IMF's implicit subsidies and UNEP's nature-negative flows both capture unpriced damage) — they are presented for magnitude comparison and never summed. "Unconscious/conscious" is this site's framing, not the sources'. The 3%-of-GDP redirection figure is arithmetic on the sourced numbers ($2.3T energy gap + $0.34T nature gap ≈ $2.6T ≈ 2.3% of GDP, rounded up for margin), not a published scenario.</p>
     <p>© Kamber Lucas · <a href="/about/">About this project</a> · <a href="/carbon-atlas/">Carbon Atlas</a> · <a href="/nature-atlas/">Nature Atlas</a> · <a href="/solutions/">Solutions</a></p>
   </footer>
@@ -496,7 +496,6 @@
   var FLOWS = [
     { n: "Fossil fuel subsidies", note: "IMF 2024 · 90% is unpriced damage", v: 7.4, c: "--s2" },
     { n: "Nature-negative flows", note: "UNEP 2023 · overlaps with the above", v: 7.3, c: "--s2" },
-    { n: "Military spending", note: "SIPRI 2025 · 11th straight yearly rise", v: 2.9, c: "--s7" },
     { n: "Clean energy investment", note: "IEA 2026 · nearly 2× fossil investment", v: 2.2, c: "--s6" },
     { n: "Fossil fuel investment", note: "IEA 2026 · oil, gas & coal supply", v: 1.2, c: "--s2" },
     { n: "Global advertising", note: "WPP 2025 · the demand engine", v: 1.1, c: "--s7" },
