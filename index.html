@@ -442,6 +442,7 @@
     var sunR = 13;
     var sunX = Math.round(W * 0.5);
     var sunY = Math.round(34 + d * (horizonY + sunR + 4 - 34));
+    lastSun.x = sunX; lastSun.y = sunY; lastSun.r = sunR;
     var sunC = lerpC(SUN_HI, SUN_LO, Math.min(1, d * 1.6));
     var rimC = lerpC(sunC, pal[n - 1], 0.45);
     for (var dy = -sunR - 2; dy <= sunR + 2; dy++) {
@@ -475,6 +476,22 @@
   var CYCLE = 48;
   var FPS = 12;
   var last = 0;
+  var lastSun = { x: 96, y: 40, r: 13 };
+
+  // the sun is a door
+  function sunHit(ev) {
+    var rect = canvas.getBoundingClientRect();
+    var lx = (ev.clientX - rect.left) / rect.width * W;
+    var ly = (ev.clientY - rect.top) / rect.height * H;
+    var dx = lx - lastSun.x, dy = ly - lastSun.y;
+    return Math.sqrt(dx * dx + dy * dy) <= lastSun.r + 3;
+  }
+  canvas.addEventListener('click', function (ev) {
+    if (sunHit(ev)) window.location.href = '/inner/';
+  });
+  canvas.addEventListener('mousemove', function (ev) {
+    canvas.style.cursor = sunHit(ev) ? 'pointer' : 'default';
+  });
   function frame(now) {
     requestAnimationFrame(frame);
     if (now - last < 1000 / FPS) return;
